@@ -2,13 +2,12 @@ using UnityEngine;
 
 public class InitalizeTestScript : MonoBehaviour
 {
-    void Start()
-    {
-        Debug.Log("Hello Unity World");
+    void Start() {
+        var log = Locator.GetLogManager();
+        log.Fatal("Test Fatal");
     }
 
-    void Update()
-    {
+    void Update() {
         
     }
 }
