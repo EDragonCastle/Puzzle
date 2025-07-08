@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 
@@ -27,6 +28,33 @@ public class ElementData : MonoBehaviour
     {
         xIndex = _x;
         yIndex = _y;
+    }
+
+    // Couroutine인데 Job System을 이용해서 할 수 있을까?
+    public void MoveToTarget(Vector3 targetPosition)
+    {
+        StartCoroutine(MoveCoroutine(targetPosition));
+    }
+
+    // Coroutine
+    private IEnumerator MoveCoroutine(Vector3 targetPosition)
+    {
+        isMoving = true;
+        float duration = 0.2f;
+
+        Vector2 startPosition = new Vector2 (transform.position.x, transform.position.y);
+        float elaspedTime = 0f;
+
+        while(elaspedTime < duration)
+        {
+            float t = elaspedTime / duration;
+            transform.position = Vector2.Lerp(startPosition, targetPosition, t);
+            elaspedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.position = targetPosition;
+        isMoving = false;
     }
 }
 

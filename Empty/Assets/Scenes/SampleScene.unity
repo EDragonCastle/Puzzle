@@ -286,6 +286,9 @@ MonoBehaviour:
     - row: 000000000000
     - row: 000000000000
     - row: 000000000000
+  elementToDestory: []
+  selectElement: {fileID: 0}
+  isProcessing: 0
 --- !u!1 &833630367
 GameObject:
   m_ObjectHideFlags: 0
