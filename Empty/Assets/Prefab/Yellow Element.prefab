@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5129160702596063461}
   - component: {fileID: 6088551882877852273}
   - component: {fileID: 8635375371526227434}
+  - component: {fileID: 746644430857583388}
   m_Layer: 5
   m_Name: Yellow Element
   m_TagString: Untagged
@@ -114,3 +115,15 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &746644430857583388
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6782767078830628032}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fab8458a5713e048b63cc566cd98605, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

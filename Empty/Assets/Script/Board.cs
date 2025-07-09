@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -33,12 +34,25 @@ public class Board : MonoBehaviour
     [SerializeField]
     private bool isProcessing;
 
+    private List<ElementData> removeData = new();
+
+    private LogManager log;
+
+    // event 설정
+    private void OnNoticeObjectClicked(object sender, NoticeObject.ClickEventArgs e)
+    {
+        ClickObject(e.ClikedObject);
+    }
+
 
     private void Start()
     {
+        log = Locator.GetLogManager();
+        NoticeObject.Click += OnNoticeObjectClicked;
         Initalize();
     }
 
+   
     private void Initalize()
     {
         DestoryElement();
@@ -77,11 +91,19 @@ public class Board : MonoBehaviour
                 }
             }
         }
+
+        if(CheckBoard())
+        {
+            Initalize();
+        }
     }
 
 
     private void ClickObject(GameObject targetObject)
     {
+        if (isProcessing)
+            return;
+
         if (targetObject.GetComponent<ElementData>() != null)
         {
             var element = targetObject.GetComponent<ElementData>();
@@ -92,7 +114,6 @@ public class Board : MonoBehaviour
     private void DestoryElement()
     {
         if(elementToDestory != null) {
-            var log = Locator.GetLogManager();
             log.Info("Destory Match");
 
             foreach(var element in elementToDestory) {
@@ -102,14 +123,19 @@ public class Board : MonoBehaviour
         }
     }
 
-    public bool CheckBoard()
+    private bool CheckBoard()
     { 
-        var log = Locator.GetLogManager();
-        log.Info("Check Board");
 
         bool hasMatched = false;
+        removeData.Clear();
 
-        List<ElementData> removeData = new();
+        foreach(var node in elementBoard)
+        {
+            if(node.element != null)
+            {
+                node.element.GetComponent<ElementData>().isMatched = false;
+            }
+        }
 
         for(int x = 0; x < width; x++) {
             for(int y = 0; y < height; y++) {
@@ -120,9 +146,12 @@ public class Board : MonoBehaviour
                         var matchedElement = IsConnected(element);
 
                         if(matchedElement.GetElementList().Count >= 3) {
-                            removeData.AddRange(matchedElement.GetElementList());
+                            // complex matching
+                            MatchResult superMatchElement = SuperMatch(matchedElement);
+                            
+                            removeData.AddRange(superMatchElement.GetElementList());
 
-                            foreach(var matchElement in matchedElement.GetElementList()) {
+                            foreach(var matchElement in superMatchElement.GetElementList()) {
                                 matchElement.isMatched = true;
                             }
                             hasMatched = true;
@@ -131,10 +160,163 @@ public class Board : MonoBehaviour
                 }
             }
         }
+
         return hasMatched;
     }
 
-    MatchResult IsConnected(ElementData element)
+    private IEnumerator ProcessTurnOnMatchBoard(bool subtrackMove)
+    {
+        foreach(var element in removeData)
+        {
+            element.isMatched = false;
+        }
+
+        RemoveAndRefill(removeData);
+        yield return new WaitForSeconds(0.4f);
+
+        if(CheckBoard())
+        {
+            StartCoroutine(ProcessTurnOnMatchBoard(false));
+        }
+    }
+
+    private void RemoveAndRefill(List<ElementData> removeData)
+    {
+        foreach (var element in removeData)
+        {
+            var elementVector = element.GetPosition();
+            int x = elementVector.x;
+            int y = elementVector.y;
+
+            Destroy(element.gameObject);
+            elementBoard[x, y] = new Node(true, null);
+        }
+
+        for(int y = 0; y < height; y++)
+        {
+            for(int x = 0; x < width; x++)
+            {
+                if (elementBoard[x, y].element == null)
+                {
+                    log.Info("The Location" + x + " " + y);
+                    RefillElement(x, y);
+                }
+            }
+        }
+    }
+
+    private void RefillElement(int x, int y)
+    {
+        int yOffset = 1;
+
+        while (y + yOffset < height && elementBoard[x, y + yOffset].element == null) {
+            yOffset++;
+        }
+
+        if (y + yOffset < height && elementBoard[x, y + yOffset].element != null)
+        {
+            ElementData element = elementBoard[x, y + yOffset].element.GetComponent<ElementData>();
+
+            var targetPos = new Vector2((x - spacingX) * 110, (y - spacingY) * 110);
+            
+            element.UIMoveToTarget(targetPos);
+            element.SetPosition(x, y);
+            elementBoard[x, y] = elementBoard[x, y + yOffset];
+
+            elementBoard[x, y + yOffset] = new Node(true, null);
+        }
+
+        if(y + yOffset == height)
+        {
+            SpwnElementAtTop(x);
+        }
+    }
+
+    private void SpwnElementAtTop(int x)
+    {
+        int index = FindIndexOfLowerNull(x);
+        // 8은 max size를 말한다.
+        int locationToMove = 8 - index;
+        int randomIndex = Random.Range(0, (int)ElementType.None);
+
+        var position = new Vector2((x - spacingX) * 110, (height - 1 - spacingY) * 110);
+        GameObject newElement = Instantiate(elementPrefabs[randomIndex], position, Quaternion.identity);
+        newElement.transform.SetParent(elementBoardGO.transform, false);
+        
+        var rectTransform = newElement.GetComponent<RectTransform>();
+
+        rectTransform.anchoredPosition = position;
+
+        newElement.GetComponent<ElementData>().SetPosition(x, index);
+        elementBoard[x, index] = new Node(true, newElement);
+
+        var targetPos = new Vector2(newElement.transform.position.x, (newElement.transform.position.y - locationToMove));
+        //var targetPos = new Vector2(rectTransform.anchoredPosition.x, rectTransform.anchoredPosition.y - locationToMove);
+        
+        newElement.GetComponent<ElementData>().MoveToTarget(targetPos);
+        //newElement.GetComponent<ElementData>().UIMoveToTarget(targetPos);
+    }
+
+    private int FindIndexOfLowerNull(int x)
+    {
+        int lowerNull = 99;
+        for(int y = 7; y >= 0; y--)
+        {
+            if (elementBoard[x,y].element == null)
+            {
+                lowerNull = y;
+            }
+        }
+
+        return lowerNull;
+    }
+
+    private MatchResult SuperMatch(MatchResult matchedElement)
+    {
+        // Match Result에서 Horizontal을 검사한다.
+        if(matchedElement.GetDirection() == MatchDirection.Horizontal || matchedElement.GetDirection() == MatchDirection.LongHorizontal) {
+            foreach(ElementData element in matchedElement.GetElementList()) {
+                var extraConnectElement = new List<ElementData>();
+
+                CheckDirection(element, new Vector2Int(0, 1), extraConnectElement);
+                CheckDirection(element, new Vector2Int(0, -1), extraConnectElement);
+
+                if(extraConnectElement.Count >=2) {
+                    log.Info("Super Horizontal Match");
+                    extraConnectElement.AddRange(matchedElement.GetElementList());
+
+                    var superMatchResult = new MatchResult();
+                    superMatchResult.SetDirection(MatchDirection.Super);
+                    superMatchResult.SetGetElementList(extraConnectElement);
+                    return superMatchResult;
+                }
+            }
+            return matchedElement;
+        }
+        // Match Result에서 Vertical 검사한다.
+        else if (matchedElement.GetDirection() == MatchDirection.Vertical || matchedElement.GetDirection() == MatchDirection.LongVertical) {
+            foreach (ElementData element in matchedElement.GetElementList()) {
+                var extraConnectElement = new List<ElementData>();
+
+                CheckDirection(element, new Vector2Int(1, 0), extraConnectElement);
+                CheckDirection(element, new Vector2Int(-1, 0), extraConnectElement);
+
+                if (extraConnectElement.Count >=2) {
+                    log.Info("Super Vertical Match");
+                    extraConnectElement.AddRange(matchedElement.GetElementList());
+
+                    var superMatchResult = new MatchResult();
+                    superMatchResult.SetDirection(MatchDirection.Super);
+                    superMatchResult.SetGetElementList(extraConnectElement);
+                    return superMatchResult;
+                }
+            }
+            return matchedElement;
+        }
+        return null;
+    }
+
+    private MatchResult IsConnected(ElementData element)
     {
         List<ElementData> connectedElement = new();
         ElementType elementType = element.elementType;
@@ -149,8 +331,6 @@ public class Board : MonoBehaviour
 
         // 3 match
         if (connectedElement.Count == 3) {
-            // 해당 내용을 함수로 뺄 수도 있으려나?
-            var log = Locator.GetLogManager();
             log.Info("Horizontal Match" + connectedElement[0].elementType);
 
             matchResult.SetGetElementList(connectedElement);
@@ -158,8 +338,6 @@ public class Board : MonoBehaviour
             return matchResult;
         }
         else if (connectedElement.Count > 3) {
-            // 해당 내용을 함수로 뺄 수도 있으려나?
-            var log = Locator.GetLogManager();
             log.Info("Long Horizontal Match" + connectedElement[0].elementType);
 
             matchResult.SetGetElementList(connectedElement);
@@ -177,8 +355,6 @@ public class Board : MonoBehaviour
 
         // 3 match
         if (connectedElement.Count == 3) {
-            // 해당 내용을 함수로 뺄 수도 있으려나?
-            var log = Locator.GetLogManager();
             log.Info("Vertical Match" + connectedElement[0].elementType);
 
             matchResult.SetGetElementList(connectedElement);
@@ -186,8 +362,6 @@ public class Board : MonoBehaviour
             return matchResult;
         }
         else if (connectedElement.Count > 3) {
-            // 해당 내용을 함수로 뺄 수도 있으려나?
-            var log = Locator.GetLogManager();
             log.Info("Long Vertical Match" + connectedElement[0].elementType);
 
             matchResult.SetGetElementList(connectedElement);
@@ -200,7 +374,7 @@ public class Board : MonoBehaviour
         return matchResult;
     }
 
-    void CheckDirection(ElementData element, Vector2Int direction, List<ElementData> connectedElement)
+    private void CheckDirection(ElementData element, Vector2Int direction, List<ElementData> connectedElement)
     {
         ElementType elementType = element.elementType;
         var elementVector = element.GetPosition();
@@ -226,11 +400,10 @@ public class Board : MonoBehaviour
         }
     }
 
-    public void SelectElement(ElementData element)
+    private void SelectElement(ElementData element)
     {
         // selectElement가 비어 있다면 선택한다.
         if (selectElement == null) {
-            var log = Locator.GetLogManager();
             log.Info(element.name);
             selectElement = element;
         }
@@ -248,7 +421,7 @@ public class Board : MonoBehaviour
     private void SwapElement(ElementData currentElement, ElementData targetElement)
     {
         // Adjacent
-        if (IsAdjacent(currentElement, targetElement)) {
+        if (!IsAdjacent(currentElement, targetElement)) {
             return;
         }
 
@@ -263,9 +436,9 @@ public class Board : MonoBehaviour
     private bool IsAdjacent(ElementData currentElement, ElementData targetElement)
     {
         var currentVector = currentElement.GetPosition();
-        var targetVector = currentElement.GetPosition();
+        var targetVector = targetElement.GetPosition();
 
-        return Mathf.Abs(currentVector.x - targetVector.x) + Mathf.Abs(currentVector.y - targetVector.y) == 1;
+        return (Mathf.Abs(currentVector.x - targetVector.x) + Mathf.Abs(currentVector.y - targetVector.y)) == 1;
     }
 
     private void DoSwap(ElementData currentElement, ElementData targetElement)
@@ -290,7 +463,10 @@ public class Board : MonoBehaviour
 
         bool hasMatch = CheckBoard();
 
-        if(!hasMatch) {
+        if(hasMatch) {
+            StartCoroutine(ProcessTurnOnMatchBoard(true));
+        }
+        else {
             DoSwap(currentElement, targetElement);
         }
 

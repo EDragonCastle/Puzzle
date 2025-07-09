@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class ElementData : MonoBehaviour
 {
@@ -36,6 +37,12 @@ public class ElementData : MonoBehaviour
         StartCoroutine(MoveCoroutine(targetPosition));
     }
 
+    // UI Test
+    public void UIMoveToTarget(Vector2 targetPosition)
+    {
+        StartCoroutine(UIMoveCoroutine(targetPosition));
+    }
+
     // Coroutine
     private IEnumerator MoveCoroutine(Vector3 targetPosition)
     {
@@ -54,6 +61,37 @@ public class ElementData : MonoBehaviour
         }
 
         transform.position = targetPosition;
+        isMoving = false;
+    }
+
+    // UI Àü¿ë Coroutine
+    private IEnumerator UIMoveCoroutine(Vector2 targetPosition)
+    {
+        isMoving = true;
+        float duration = 0.2f;
+
+        //Vector2 startPosition = new Vector2(transform.position.x, transform.position.y);
+
+        var rectTransform = this.gameObject.GetComponent<RectTransform>();
+        Vector2 startPosition = rectTransform.anchoredPosition;
+        float elaspedTime = 0f;
+
+        while (elaspedTime < duration)
+        {
+            float t = elaspedTime / duration;
+            rectTransform.anchoredPosition = Vector2.Lerp(startPosition, targetPosition, t);
+            elaspedTime += Time.deltaTime;
+            yield return null;
+        }
+
+
+        if (rectTransform != null)
+        {
+            rectTransform.anchoredPosition = targetPosition;
+            rectTransform.anchorMin = Vector2.one * 0.5f;
+            rectTransform.anchorMax = Vector2.one * 0.5f;
+            rectTransform.pivot = Vector2.one * 0.5f;
+        }
         isMoving = false;
     }
 }
