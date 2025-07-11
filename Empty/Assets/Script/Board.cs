@@ -22,6 +22,9 @@ public class Board : MonoBehaviour
 
     private readonly int cellSize = 110;
 
+    private float startX;
+    private float startY;
+
     public GameObject[] prefab;
     public GameObject board;
 
@@ -33,7 +36,6 @@ public class Board : MonoBehaviour
     List<(int x, int y)> saveIndex;
     HashSet<(int x, int y)> removeIndex;
 
-
     void Start()
     {
         Initalize();
@@ -41,22 +43,13 @@ public class Board : MonoBehaviour
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.J))
-        {
-            foreach (var remove in removeIndex)
-            {
-                if (elements[remove.x, remove.y].activeSelf)
-                    elements[remove.x, remove.y].SetActive(false);
-                else
-                    elements[remove.x, remove.y].SetActive(true);
-            }
-        }
+
     }
 
     private void Initalize()
     {
-        float startX = -((width * 0.5f - 0.5f) * cellSize);
-        float startY = ((height * 0.5f - 0.5f) * cellSize);
+        startX = -((width * 0.5f - 0.5f) * cellSize);
+        startY = ((height * 0.5f - 0.5f) * cellSize);
 
         colors = new int[width, height];
         elements = new GameObject[width, height];
@@ -85,9 +78,80 @@ public class Board : MonoBehaviour
 
         CheckBoard();
 
-        foreach(var remove in removeIndex)
+        // Board Setting
+        while(removeIndex.Count > 0)
+        {
+            DestoryElement();
+            ReFillElement();
+            CheckBoard();
+        }
+
+        Debug.Log("Game Start");
+    }
+
+    private void DestoryElement()
+    {
+        Debug.Log("Destory Element");
+        // Destory
+        foreach (var remove in removeIndex)
         {
             Debug.Log($"Remove Data : {remove.x} {remove.y}");
+
+            if (elements[remove.x, remove.y] != null)
+            {
+                Destroy(elements[remove.x, remove.y]);
+                elements[remove.x, remove.y] = null;
+            }
+        }
+    }
+
+    private void ReFillElement()
+    {
+        Debug.Log("ReFill Element");
+        var reFillIndex = new HashSet<(int x, int y)>();
+
+        while(removeIndex.Count > 0)
+        {
+            // 위에서 삭제했으니 remove index해보자.
+            foreach (var remove in removeIndex)
+            {
+                // 먼저 Instaniate를 해야겠다!
+                var randIndex = Random.Range(0, prefab.Length);
+                var newElement = Instantiate(prefab[randIndex]);
+                newElement.transform.SetParent(board.transform, false);
+
+                // 새로 생성한 newElement은 항상 [remove.x, 0]에 위치한다.
+                var rectTransform = newElement.GetComponent<RectTransform>();
+                rectTransform.anchoredPosition = new Vector2(startX + remove.x * cellSize, startY - 0 * cellSize);
+
+                // 이런식으로 진행해야겠네? 이러면 한 번만해서 공백이 생겨서 remove.y에 해당하는 애들을 전부 옮겨야해.
+                for(int i = remove.y; i > 0; i--)
+                {
+                    // 위치 이동을 시켜야 한다.
+                    elements[remove.x, i] = elements[remove.x, i - 1];
+                    colors[remove.x, i] = colors[remove.x, i - 1];
+                    if(elements[remove.x, i - 1] != null)
+                    {
+                        var objectRectTransform = elements[remove.x, i - 1].GetComponent<RectTransform>();
+                        objectRectTransform.anchoredPosition = new Vector2(startX + remove.x * cellSize, startY - i * cellSize);
+                    }
+                }
+
+                // 색상도 다시 세팅해줘야해
+                elements[remove.x, 0] = newElement;
+                colors[remove.x, 0] = randIndex;
+            
+                // null일 때는 다시 검사를 해야해!
+                if (elements[remove.x, remove.y] == null)
+                    reFillIndex.Add(remove);
+            }
+
+            removeIndex.Clear();
+
+            foreach(var refill in reFillIndex)
+            {
+                removeIndex.Add(refill);
+            }
         }
     }
 
