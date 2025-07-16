@@ -4,16 +4,15 @@ using UnityEngine;
 
 public enum Direction
 {
-    Vertical, 
+    Vertical,
     Horizontal,
     None,
 }
-
 public class Board : MonoBehaviour
 {
     [SerializeField]
     private int width = 6;
-    
+
     [SerializeField]
     private int height = 8;
 
@@ -38,14 +37,24 @@ public class Board : MonoBehaviour
     private HashSet<(int x, int y)> removeIndex;
 
     // swap에 필요할 object
+    [SerializeField]
     private GameObject swapObject;
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.K))
+        if (Input.GetKeyDown(KeyCode.K))
             Initalize();
     }
 
+    private void OnEnable()
+    {
+        Element.onClickElement += SelectElement;
+    }
+
+    private void OnDisable()
+    {
+        Element.onClickElement -= SelectElement;
+    }
     private void Initalize()
     {
         startX = -((width * 0.5f - 0.5f) * cellSize);
@@ -70,10 +79,10 @@ public class Board : MonoBehaviour
                 // Object에서 Rect Transform를 받아오고, 위치 조절
                 var rectTransform = newElement.GetComponent<RectTransform>();
                 rectTransform.anchoredPosition = new Vector2(startX + x * cellSize, startY - y * cellSize);
-                
+
                 colors[x, y] = randIndex;
                 elements[x, y] = newElement;
-                
+
                 var objectElement = newElement.GetComponent<Element>();
                 objectElement.SetPosition(x, y);
             }
@@ -85,6 +94,9 @@ public class Board : MonoBehaviour
     // Swap을 구현할 차례다.
     private void SelectElement(GameObject _selectObject)
     {
+        if (isProcessing)
+            return;
+
         // 어떤 object를 선택했어.
         if (swapObject == null)
         {
@@ -94,7 +106,7 @@ public class Board : MonoBehaviour
         else
         {
             if (IsExistRangeElement(_selectObject))
-                StartCoroutine(SwapElement(_selectObject));
+                StartCoroutine(SwapElement(swapObject, _selectObject, false));
             else
                 swapObject = null;
         }
@@ -110,14 +122,14 @@ public class Board : MonoBehaviour
         var firstObjectIndex = swapObject.GetComponent<Element>().GetPosition();
         var secondObjectIndex = targetObject.GetComponent<Element>().GetPosition();
 
-        return Mathf.Abs(firstObjectIndex.x - secondObjectIndex.x) + 
+        return Mathf.Abs(firstObjectIndex.x - secondObjectIndex.x) +
             Mathf.Abs(firstObjectIndex.y - secondObjectIndex.y) == 1 ? true : false;
     }
 
-    private IEnumerator SwapElement(GameObject changeObject)
+    private IEnumerator SwapElement(GameObject _swapObject, GameObject changeObject, bool isReturn)
     {
         // 일단 Rect Transform을 받아와.
-        var firstObjectRectTransform = swapObject.GetComponent<RectTransform>();
+        var firstObjectRectTransform = _swapObject.GetComponent<RectTransform>();
         var secondObjectRectTransform = changeObject.GetComponent<RectTransform>();
 
         // 초기 Swap할 Vector 위치
@@ -131,30 +143,126 @@ public class Board : MonoBehaviour
 
         yield return StartCoroutine(AnimateMovement(moveList));
 
+        // Element Index도 교체해야해.
+        var swapIndex = _swapObject.GetComponent<Element>();
+        var changeIndex = changeObject.GetComponent<Element>();
+
+        // index를 가져온다.
+        Vector2Int firstIndex = new Vector2Int((int)swapIndex.GetPosition().x, (int)swapIndex.GetPosition().y);
+        Vector2Int secondIndex = new Vector2Int((int)changeIndex.GetPosition().x, (int)changeIndex.GetPosition().y);
+
         // elements 값도 바꿔야한다.
-        var tempElement = elements[(int)firstObjectVector.x, (int)firstObjectVector.y];
-        elements[(int)firstObjectVector.x, (int)firstObjectVector.y] = elements[(int)secondObjectVector.x, (int)secondObjectVector.y];
-        elements[(int)secondObjectVector.x, (int)secondObjectVector.y] = tempElement;
+        var tempElement = elements[firstIndex.x, firstIndex.y];
+        elements[firstIndex.x, firstIndex.y] = elements[secondIndex.x, secondIndex.y];
+        elements[secondIndex.x, secondIndex.y] = tempElement;
 
         // Color도 바꿔야해.
-        var tempColor = colors[(int)firstObjectVector.x, (int)firstObjectVector.y];
-        colors[(int)firstObjectVector.x, (int)firstObjectVector.y] = colors[(int)secondObjectVector.x, (int)secondObjectVector.y];
-        colors[(int)secondObjectVector.x, (int)secondObjectVector.y] = tempColor;
-
-        // Element Index도 교체해야해.
-        var swapIndex = swapObject.GetComponent<Element>();
-        var changeIndex = changeObject.GetComponent<Element>();
+        var tempColor = colors[firstIndex.x, firstIndex.y];
+        colors[firstIndex.x, firstIndex.y] = colors[secondIndex.x, secondIndex.y];
+        colors[secondIndex.x, secondIndex.y] = tempColor;
 
         var tempIndex = swapIndex.GetPosition();
         swapIndex.SetPosition(changeIndex.GetPosition());
         changeIndex.SetPosition(tempIndex);
 
         // 그 다음에 Object를 바꿔주면 끝인가?
-        var temp = swapObject;
-        swapObject = changeObject;
+        var temp = _swapObject;
+        _swapObject = changeObject;
         changeObject = temp;
 
-        // DFS로 가서 확인해야 하는데 확인을 먼저 하자.
+        // DFS로 가서 확인해야 하는데 두 개의 object를 확인하면 된다.
+
+        if (!isReturn)
+        {
+            var visits = new bool[width, height];
+
+            SwapDFS(visits, firstIndex.x, firstIndex.y, colors[firstIndex.x, firstIndex.y], Direction.None, 1);
+            if (saveIndex.Count >= 3)
+            {
+                foreach (var save in saveIndex)
+                {
+                    removeIndex.Add(save);
+                }
+            }
+            tourIndex.Clear();
+
+            SwapDFS(visits, secondIndex.x, secondIndex.y, colors[secondIndex.x, secondIndex.y], Direction.None, 1);
+            if (saveIndex.Count >= 3)
+            {
+                foreach (var save in saveIndex)
+                {
+                    removeIndex.Add(save);
+                }
+            }
+            tourIndex.Clear();
+            if (removeIndex.Count > 0)
+                StartCoroutine(DestoryElement());
+            else
+            {
+                StartCoroutine(SwapElement(changeObject, _swapObject, true));
+                swapObject = null;
+            }
+        }
+    }
+
+    // 전방향을 확인해야 한다.
+    private void SwapDFS(bool[,] visits, int x, int y, int _color, Direction _direction, int count)
+    {
+        // 범위 넘어가면 돌아가자.
+        if (x < 0 || width <= x || y < 0 || height <= y)
+        {
+            return;
+        }
+
+        if (visits[x, y])
+        {
+            return;
+        }
+
+        // 색이 다르다면 돌아가자. 
+        if (colors[x, y] != _color)
+        {
+            return;
+        }
+
+        count++;
+        visits[x, y] = true;
+
+        tourIndex.Add((x, y));
+
+        if (tourIndex.Count >= 3)
+        {
+            saveIndex = tourIndex;
+        }
+
+        switch (_direction)
+        {
+            case Direction.Horizontal:
+                SwapDFS(visits, x, y + 1, _color, Direction.Horizontal, count);
+                SwapDFS(visits, x, y - 1, _color, Direction.Horizontal, count);
+                break;
+            case Direction.Vertical:
+                SwapDFS(visits, x + 1, y, _color, Direction.Vertical, count);
+                SwapDFS(visits, x - 1, y, _color, Direction.Vertical, count);
+                break;
+            case Direction.None:
+                SwapDFS(visits, x + 1, y, _color, Direction.Vertical, count);
+                SwapDFS(visits, x - 1, y, _color, Direction.Vertical, count);
+                if (tourIndex.Count >= 3)
+                {
+                    saveIndex = tourIndex;
+                    foreach (var save in saveIndex)
+                    {
+                        removeIndex.Add(save);
+                    }
+                }
+                tourIndex.Clear();
+                tourIndex.Add((x, y));
+                SwapDFS(visits, x, y + 1, _color, Direction.Horizontal, count);
+                SwapDFS(visits, x, y - 1, _color, Direction.Horizontal, count);
+                break;
+        }
+        visits[x, y] = false;
     }
 
     #region Refill
@@ -194,7 +302,7 @@ public class Board : MonoBehaviour
                 // 이런 식으로 진행해야겠네? 이러면 한 번만해서 공백이 생겨서 remove.y에 해당하는 애들을 전부 옮겨야해.
                 for (int y = value.maxDepth; y > 0; y--)
                 {
-                    if(elements[x, y - 1] != null)
+                    if (elements[x, y - 1] != null)
                     {
                         var moveObject = elements[x, y - 1];
                         var objectRectTransform = moveObject.GetComponent<RectTransform>();
@@ -203,7 +311,7 @@ public class Board : MonoBehaviour
                         Vector2 endPos = new Vector2(startX + x * cellSize, startY - y * cellSize);
 
                         tourDict[objectRectTransform] = (startPos, endPos);
-                        
+
                         var moveIndex = moveObject.GetComponent<Element>();
                         moveIndex.SetPosition(x, y);
                     }
@@ -219,7 +327,7 @@ public class Board : MonoBehaviour
             }
 
             var finalList = new List<(Vector2 start, Vector2 end, RectTransform target)>();
-            foreach(var entry in tourDict)
+            foreach (var entry in tourDict)
             {
                 finalList.Add((entry.Value.start, entry.Value.end, entry.Key));
             }
@@ -287,7 +395,7 @@ public class Board : MonoBehaviour
     private bool CheckBlank(List<(int blankCount, int maxDepth)> _blankList)
     {
         var isEmptyBlank = true;
-        foreach(var value in _blankList)
+        foreach (var value in _blankList)
         {
             if (value.blankCount > 0)
             {
@@ -302,12 +410,12 @@ public class Board : MonoBehaviour
     {
         var blankList = new List<(int blankCount, int maxDepth)>();
 
-        for(int i = 0; i < width; i++)
+        for (int i = 0; i < width; i++)
         {
             blankList.Add((0, 0));
         }
-        
-        foreach(var remove in _removeList)
+
+        foreach (var remove in _removeList)
         {
             var listValue = blankList[remove.x];
             listValue.blankCount++;
@@ -346,7 +454,7 @@ public class Board : MonoBehaviour
     #region CheckBoard
     private void CheckBoard()
     {
-        for(int j = 0; j < height; j++)
+        for (int j = 0; j < height; j++)
         {
             for (int i = 0; i < width; i++)
             {
