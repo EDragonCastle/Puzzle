@@ -1,0 +1,137 @@
+// 과거의 유산이다    
+private IEnumerator ReFillElement()
+{
+    isProcessing = true;
+
+    Debug.Log("ReFill Element");
+    var reFillIndex = new HashSet<(int x, int y)>();
+
+    // 조건을 다시 해야할 것 같아.
+    while(removeIndex.Count > 0)
+    {
+        int? previousValue = null;
+        // 위에서 삭제했으니 remove index해보자.
+        foreach (var remove in removeIndex)
+        {
+            int current = remove.y;
+
+            // 먼저 Instaniate를 해야겠다!
+            var randIndex = Random.Range(0, prefab.Length);
+            var newElement = Instantiate(prefab[randIndex]);
+            newElement.transform.SetParent(board.transform, false);
+
+            // 새로 생성한 newElement은 항상 [remove.x, 0]에 위치한다.
+            var rectTransform = newElement.GetComponent<RectTransform>();
+            rectTransform.anchoredPosition = new Vector2(startX + remove.x * cellSize, startY - 0 * cellSize);
+
+            // 이런식으로 진행해야겠네? 이러면 한 번만해서 공백이 생겨서 remove.y에 해당하는 애들을 전부 옮겨야해.
+            for (int i = remove.y; i > 0; i--)
+            {
+                // 위치 이동을 시켜야 한다.
+                elements[remove.x, i] = elements[remove.x, i - 1];
+                colors[remove.x, i] = colors[remove.x, i - 1];
+                if(elements[remove.x, i - 1] != null)
+                {
+                    // 여기가 위치 조절해주는 곳이다.
+                    var objectRectTransform = elements[remove.x, i - 1].GetComponent<RectTransform>();
+                    objectRectTransform.anchoredPosition = new Vector2(startX + remove.x * cellSize, startY - i * cellSize);
+                }
+            }
+
+            // 색상도 다시 세팅해줘야해
+            elements[remove.x, 0] = newElement;
+            colors[remove.x, 0] = randIndex;
+
+            // previous 값이랑 current 값이랑 다르면 Coroutine 실행
+            if(previousValue != null && previousValue != current)
+                yield return new WaitForSeconds(0.2f);
+
+            previousValue = current;
+                    
+            // null일 때는 다시 검사를 해야해!
+            if (elements[remove.x, remove.y] == null) 
+                reFillIndex.Add(remove);
+        }
+
+        yield return new WaitForSeconds(0.2f);
+
+        removeIndex.Clear();
+
+        foreach(var refill in reFillIndex)
+        {
+            removeIndex.Add(refill);
+        }
+        
+    }
+
+    CheckBoard();
+    isProcessing = false;
+}
+#endregion
+
+// legacy Refill ver 2
+private IEnumerator ReFill()
+    {
+        // 여기에 blank count랑 max Depth가 들어가 있다.
+        var blankList = BlankCheckBoard(removeIndex);
+
+        // while문을 탈출하는 방법은 무엇일까?
+        // blankList에서 모든 blankCount에서 0이 되어야 한다.
+
+        // 아 List 사용하는 데 index가 x부분이여서 0부터 순회해야 하네? 
+        // 구조체로 바꾸면 메모리를 더 먹을까? 는 나중에 고려해야할 부분이고 지금은 index로 하자.
+        bool isRunning = CheckBlank(blankList);
+        
+        while(!isRunning)
+        {
+            for(int x = 0; x < blankList.Count; x++)
+            {
+                var value = blankList[x];
+
+                if (value.blankCount <= 0)
+                    continue;
+
+                // 먼저 Instaniate를 해야겠다!
+                var randIndex = Random.Range(0, prefab.Length);
+                var newElement = Instantiate(prefab[randIndex]);
+                newElement.transform.SetParent(board.transform, false);
+
+                // 새로 생성한 newElement은 항상 [remove.x, 0]에 위치한다.
+                var rectTransform = newElement.GetComponent<RectTransform>();
+                rectTransform.anchoredPosition = new Vector2(startX + x * cellSize, startY - 0 * cellSize);
+
+                // 이런식으로 진행해야겠네? 이러면 한 번만해서 공백이 생겨서 remove.y에 해당하는 애들을 전부 옮겨야해.
+                for (int y = value.maxDepth; y > 0; y--)
+                {
+                    // 위치 이동을 시켜야 한다.
+                    elements[x, y] = elements[x, y - 1];
+                    colors[x, y] = colors[x, y - 1];
+                    if (elements[x, y - 1] != null)
+                    {
+                        // 여기가 위치 조절해주는 곳이다.
+                        var objectRectTransform = elements[x, y - 1].GetComponent<RectTransform>();
+                        objectRectTransform.anchoredPosition = new Vector2(startX + x * cellSize, startY - y * cellSize);
+                    }
+                }
+                
+                elements[x, 0] = newElement;
+                colors[x, 0] = randIndex;
+
+                if (elements[x, value.maxDepth] != null)
+                    blankList[x] = ResearchMaxDepth(value, x);
+            }
+
+            // 지금은 현재 터지면 진행하는 식이다.
+            // 이제 흘러내리도록 고쳐보자.
+            yield return new WaitForSeconds(0.01f);
+
+            isRunning = CheckBlank(blankList);
+        }
+
+        yield return new WaitForSeconds(0.2f);
+        // 이 곳은 isRunning이 false가 되서 빠져 나와서 clear를 해준 것이다.
+        removeIndex.Clear();
+
+        CheckBoard();
+        isProcessing = false;
+    }

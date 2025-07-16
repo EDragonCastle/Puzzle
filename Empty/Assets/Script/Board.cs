@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Xml.Linq;
+using System.Linq;
 using UnityEngine;
 
 
@@ -22,6 +22,8 @@ public class Board : MonoBehaviour
 
     private readonly int cellSize = 110;
 
+    private bool isProcessing;
+
     private float startX;
     private float startY;
 
@@ -36,14 +38,11 @@ public class Board : MonoBehaviour
     List<(int x, int y)> saveIndex;
     HashSet<(int x, int y)> removeIndex;
 
-    void Start()
-    {
-        Initalize();
-    }
 
     private void Update()
     {
-
+        if(Input.GetKeyDown(KeyCode.K))
+            Initalize();
     }
 
     private void Initalize()
@@ -77,44 +76,52 @@ public class Board : MonoBehaviour
         }
 
         CheckBoard();
-
-        // Board Setting
-        while(removeIndex.Count > 0)
-        {
-            DestoryElement();
-            ReFillElement();
-            CheckBoard();
-        }
-
-        Debug.Log("Game Start");
     }
 
-    private void DestoryElement()
+    private IEnumerator DestoryElement()
     {
+        isProcessing = true;
+
         Debug.Log("Destory Element");
         // Destory
         foreach (var remove in removeIndex)
         {
-            Debug.Log($"Remove Data : {remove.x} {remove.y}");
-
             if (elements[remove.x, remove.y] != null)
             {
                 Destroy(elements[remove.x, remove.y]);
                 elements[remove.x, remove.y] = null;
             }
         }
+
+        yield return new WaitForSeconds(0.3f);
+        StartCoroutine(AnimationReFill());
     }
 
-    private void ReFillElement()
+    private IEnumerator AnimationReFill()
     {
-        Debug.Log("ReFill Element");
-        var reFillIndex = new HashSet<(int x, int y)>();
+        // 여기에 blank count랑 max Depth가 들어가 있다.
+        var blankList = BlankCheckBoard(removeIndex);
 
-        while(removeIndex.Count > 0)
+        // Animation 처럼 흘러 가야 한다.
+
+        // while문을 탈출하는 방법은 무엇일까?
+        // blankList에서 모든 blankCount에서 0이 되어야 한다.
+
+        // 아 List 사용하는 데 index가 x부분이여서 0부터 순회해야 하네? 
+        // 구조체로 바꾸면 메모리를 더 먹을까? 는 나중에 고려해야할 부분이고 지금은 index로 하자.
+        bool isRunning = CheckBlank(blankList);
+
+        while (!isRunning)
         {
-            // 위에서 삭제했으니 remove index해보자.
-            foreach (var remove in removeIndex)
+            var tourDict = new Dictionary<RectTransform, (Vector2 start, Vector2 end)>();
+
+            for (int x = 0; x < blankList.Count; x++)
             {
+                var value = blankList[x];
+
+                if (value.blankCount <= 0)
+                    continue;
+
                 // 먼저 Instaniate를 해야겠다!
                 var randIndex = Random.Range(0, prefab.Length);
                 var newElement = Instantiate(prefab[randIndex]);
@@ -122,37 +129,153 @@ public class Board : MonoBehaviour
 
                 // 새로 생성한 newElement은 항상 [remove.x, 0]에 위치한다.
                 var rectTransform = newElement.GetComponent<RectTransform>();
-                rectTransform.anchoredPosition = new Vector2(startX + remove.x * cellSize, startY - 0 * cellSize);
+                var upperStartPos = new Vector2(startX + x * cellSize, startY - (-1) * cellSize);
+                var upperEndPos = new Vector2(startX + x * cellSize, startY - 0 * cellSize);
 
-                // 이런식으로 진행해야겠네? 이러면 한 번만해서 공백이 생겨서 remove.y에 해당하는 애들을 전부 옮겨야해.
-                for(int i = remove.y; i > 0; i--)
+                rectTransform.anchoredPosition = upperStartPos;
+                tourDict[rectTransform] = (upperStartPos, upperEndPos);
+
+                // 이런 식으로 진행해야겠네? 이러면 한 번만해서 공백이 생겨서 remove.y에 해당하는 애들을 전부 옮겨야해.
+                for (int y = value.maxDepth; y > 0; y--)
                 {
-                    // 위치 이동을 시켜야 한다.
-                    elements[remove.x, i] = elements[remove.x, i - 1];
-                    colors[remove.x, i] = colors[remove.x, i - 1];
-                    if(elements[remove.x, i - 1] != null)
+                    if(elements[x, y - 1] != null)
                     {
-                        var objectRectTransform = elements[remove.x, i - 1].GetComponent<RectTransform>();
-                        objectRectTransform.anchoredPosition = new Vector2(startX + remove.x * cellSize, startY - i * cellSize);
+                        var moveObject = elements[x, y - 1];
+                        var objectRectTransform = moveObject.GetComponent<RectTransform>();
+
+                        Vector2 startPos = objectRectTransform.anchoredPosition;
+                        Vector2 endPos = new Vector2(startX + x * cellSize, startY - y * cellSize);
+
+                        tourDict[objectRectTransform] = (startPos, endPos);
+
                     }
+                    elements[x, y] = elements[x, y - 1];
+                    colors[x, y] = colors[x, y - 1];
                 }
 
-                // 색상도 다시 세팅해줘야해
-                elements[remove.x, 0] = newElement;
-                colors[remove.x, 0] = randIndex;
-            
-                // null일 때는 다시 검사를 해야해!
-                if (elements[remove.x, remove.y] == null)
-                    reFillIndex.Add(remove);
+                elements[x, 0] = newElement;
+                colors[x, 0] = randIndex;
+
+                if (elements[x, value.maxDepth] != null)
+                    blankList[x] = ResearchMaxDepth(value, x);
             }
 
-            removeIndex.Clear();
-
-            foreach(var refill in reFillIndex)
+            var finalList = new List<(Vector2 start, Vector2 end, RectTransform target)>();
+            foreach(var entry in tourDict)
             {
-                removeIndex.Add(refill);
+                finalList.Add((entry.Value.start, entry.Value.end, entry.Key));
+            }
+
+            if (finalList.Count > 0)
+            {
+                yield return StartCoroutine(AnimateMovement(finalList));
+            }
+
+            isRunning = CheckBlank(blankList);
+        }
+
+        removeIndex.Clear();
+        CheckBoard();
+        isProcessing = false;
+    }
+
+    // 왜 참조가 되는거지?
+    private IEnumerator AnimateMovement(List<(Vector2 start, Vector2 end, RectTransform target)> moveList)
+    {
+        Debug.Log("Animation Movement");
+        float elapsed = 0f;
+        float duration = 0.2f; // 이동 시간 (조절 가능)
+
+        while (elapsed < duration)
+        {
+            float t = elapsed / duration;
+
+            foreach (var move in moveList)
+            {
+                move.target.anchoredPosition = Vector2.Lerp(move.start, move.end, t);
+            }
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        // 마지막에 정확히 도착 지점으로 고정
+        foreach (var move in moveList)
+        {
+            move.target.anchoredPosition = move.end;
+        }
+    }
+
+    private (int blankCount, int maxDepth) ResearchMaxDepth((int blankCount, int maxDepth) _value, int index)
+    {
+        // 잘 작동이 되지 않는 이유는 일단 maxDepth 부분을 초기화 해야 한다는 점이다.
+        // 어떻게 초기화 해야할 지 생각해야겠다. 
+        // Max Depth 부분이 채워졌어. 그러면 count를 확인해서 blankCount가 1이면 끝.
+        // 근데 2이상이다? 그러면 element에서 위로 돌면서 확인해야 하고 maxDepth를 확인하면 되겠다.
+        // 또한 blankCount--를 해주자.
+        // 그리고 검사할 때는 max -> init으로 확인하자.
+        // 장소를 옮기고 다시 하자.
+
+        _value.blankCount--;
+
+        if (_value.blankCount <= 0)
+        {
+            return _value;
+        }
+
+        // 이 부분에서 문제가 생긴듯 하다.
+        for (int y = _value.maxDepth; y > 0; y--)
+        {
+            if (elements[index, y] == null)
+            {
+                _value.maxDepth = y;
+                return _value;
             }
         }
+
+        // 위으 조건문을 통과 했다는 의미가 위 list에 null이 없다는 거니까 다 찼다는 뜻이다.
+        _value.blankCount = 0;
+        return _value;
+    }
+
+    private bool CheckBlank(List<(int blankCount, int maxDepth)> _blankList)
+    {
+        var isEmptyBlank = true;
+        foreach(var value in _blankList)
+        {
+            if (value.blankCount > 0)
+            {
+                isEmptyBlank = false;
+                return isEmptyBlank;
+            }
+        }
+        return isEmptyBlank;
+    }
+
+    private List<(int blankCount, int maxDepth)> BlankCheckBoard(HashSet<(int x, int y)> _removeList)
+    {
+        var blankList = new List<(int blankCount, int maxDepth)>();
+
+        // Initailze 흠.. 이 부분도 마음에 안 들긴해.
+        for(int i = 0; i < width; i++)
+        {
+            blankList.Add((0, 0));
+        }
+
+        // 비어 있는 곳의 x를 확인해서 빈 공간을 Check 한다.
+        // 최대 깊이도 확인하면 더 좋을 것 같다.
+        foreach(var remove in _removeList)
+        {
+            var listValue = blankList[remove.x];
+            listValue.blankCount++;
+
+            if (listValue.maxDepth < remove.y)
+                listValue.maxDepth = remove.y;
+
+            blankList[remove.x] = listValue;
+        }
+
+        return blankList;
     }
 
     private void CheckBoard()
@@ -164,6 +287,9 @@ public class Board : MonoBehaviour
                 DFS(i, j, colors[i, j], Direction.None, 1);
             }
         }
+
+        if (removeIndex.Count > 0)
+            StartCoroutine(DestoryElement());
     }
 
     private void DFS(int x, int y, int _color, Direction _direction, int count)
