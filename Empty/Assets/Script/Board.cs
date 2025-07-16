@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-
 
 public enum Direction
 {
@@ -10,7 +8,6 @@ public enum Direction
     Horizontal,
     None,
 }
-
 
 public class Board : MonoBehaviour
 {
@@ -24,20 +21,24 @@ public class Board : MonoBehaviour
 
     private bool isProcessing;
 
+    // 중앙에 위치해야 할 object다.
     private float startX;
     private float startY;
 
     public GameObject[] prefab;
     public GameObject board;
 
+    // Board Object다.
     private int[,] colors;
     private GameObject[,] elements;
 
     // DFS에 필요한 Index 저장할 변수
-    List<(int x, int y)> tourIndex;
-    List<(int x, int y)> saveIndex;
-    HashSet<(int x, int y)> removeIndex;
+    private List<(int x, int y)> tourIndex;
+    private List<(int x, int y)> saveIndex;
+    private HashSet<(int x, int y)> removeIndex;
 
+    // swap에 필요할 object
+    private GameObject swapObject;
 
     private void Update()
     {
@@ -72,40 +73,95 @@ public class Board : MonoBehaviour
                 
                 colors[x, y] = randIndex;
                 elements[x, y] = newElement;
+                
+                var objectElement = newElement.GetComponent<Element>();
+                objectElement.SetPosition(x, y);
             }
         }
 
         CheckBoard();
     }
 
-    private IEnumerator DestoryElement()
+    // Swap을 구현할 차례다.
+    private void SelectElement(GameObject _selectObject)
     {
-        isProcessing = true;
-
-        Debug.Log("Destory Element");
-        // Destory
-        foreach (var remove in removeIndex)
+        // 어떤 object를 선택했어.
+        if (swapObject == null)
         {
-            if (elements[remove.x, remove.y] != null)
-            {
-                Destroy(elements[remove.x, remove.y]);
-                elements[remove.x, remove.y] = null;
-            }
+            swapObject = _selectObject;
+            Debug.Log($"{swapObject} 선택했다.");
         }
-
-        yield return new WaitForSeconds(0.3f);
-        StartCoroutine(AnimationReFill());
+        else
+        {
+            if (IsExistRangeElement(_selectObject))
+                StartCoroutine(SwapElement(_selectObject));
+            else
+                swapObject = null;
+        }
     }
 
+    private bool IsExistRangeElement(GameObject targetObject)
+    {
+        // 먼저 swap전에 확인할 게 있다.
+        // 해당 image를 클릭해서 해당 요소의 index x, y 값을 알아야 해.
+        // 요소를 만들자!
+        // 그 다음 previous.xy - current.xy의 절대 값이 1이여야 swap이 가능하다. 아니면 swapObject = null
+        // 위 조건을 만족했으면 그 때 Swap을 한다.
+        var firstObjectIndex = swapObject.GetComponent<Element>().GetPosition();
+        var secondObjectIndex = targetObject.GetComponent<Element>().GetPosition();
+
+        return Mathf.Abs(firstObjectIndex.x - secondObjectIndex.x) + 
+            Mathf.Abs(firstObjectIndex.y - secondObjectIndex.y) == 1 ? true : false;
+    }
+
+    private IEnumerator SwapElement(GameObject changeObject)
+    {
+        // 일단 Rect Transform을 받아와.
+        var firstObjectRectTransform = swapObject.GetComponent<RectTransform>();
+        var secondObjectRectTransform = changeObject.GetComponent<RectTransform>();
+
+        // 초기 Swap할 Vector 위치
+        var firstObjectVector = new Vector2(firstObjectRectTransform.anchoredPosition.x, firstObjectRectTransform.anchoredPosition.y);
+        var secondObjectVector = new Vector2(secondObjectRectTransform.anchoredPosition.x, secondObjectRectTransform.anchoredPosition.y);
+
+        // 각자 object가 정해진 start와 end에 맞춰서 이동된다.
+        var moveList = new List<(Vector2 start, Vector2 end, RectTransform target)>();
+        moveList.Add((firstObjectVector, secondObjectVector, firstObjectRectTransform));
+        moveList.Add((secondObjectVector, firstObjectVector, secondObjectRectTransform));
+
+        yield return StartCoroutine(AnimateMovement(moveList));
+
+        // elements 값도 바꿔야한다.
+        var tempElement = elements[(int)firstObjectVector.x, (int)firstObjectVector.y];
+        elements[(int)firstObjectVector.x, (int)firstObjectVector.y] = elements[(int)secondObjectVector.x, (int)secondObjectVector.y];
+        elements[(int)secondObjectVector.x, (int)secondObjectVector.y] = tempElement;
+
+        // Color도 바꿔야해.
+        var tempColor = colors[(int)firstObjectVector.x, (int)firstObjectVector.y];
+        colors[(int)firstObjectVector.x, (int)firstObjectVector.y] = colors[(int)secondObjectVector.x, (int)secondObjectVector.y];
+        colors[(int)secondObjectVector.x, (int)secondObjectVector.y] = tempColor;
+
+        // Element Index도 교체해야해.
+        var swapIndex = swapObject.GetComponent<Element>();
+        var changeIndex = changeObject.GetComponent<Element>();
+
+        var tempIndex = swapIndex.GetPosition();
+        swapIndex.SetPosition(changeIndex.GetPosition());
+        changeIndex.SetPosition(tempIndex);
+
+        // 그 다음에 Object를 바꿔주면 끝인가?
+        var temp = swapObject;
+        swapObject = changeObject;
+        changeObject = temp;
+
+        // DFS로 가서 확인해야 하는데 확인을 먼저 하자.
+    }
+
+    #region Refill
     private IEnumerator AnimationReFill()
     {
         // 여기에 blank count랑 max Depth가 들어가 있다.
         var blankList = BlankCheckBoard(removeIndex);
-
-        // Animation 처럼 흘러 가야 한다.
-
-        // while문을 탈출하는 방법은 무엇일까?
-        // blankList에서 모든 blankCount에서 0이 되어야 한다.
 
         // 아 List 사용하는 데 index가 x부분이여서 0부터 순회해야 하네? 
         // 구조체로 바꾸면 메모리를 더 먹을까? 는 나중에 고려해야할 부분이고 지금은 index로 하자.
@@ -147,7 +203,9 @@ public class Board : MonoBehaviour
                         Vector2 endPos = new Vector2(startX + x * cellSize, startY - y * cellSize);
 
                         tourDict[objectRectTransform] = (startPos, endPos);
-
+                        
+                        var moveIndex = moveObject.GetComponent<Element>();
+                        moveIndex.SetPosition(x, y);
                     }
                     elements[x, y] = elements[x, y - 1];
                     colors[x, y] = colors[x, y - 1];
@@ -179,7 +237,6 @@ public class Board : MonoBehaviour
         isProcessing = false;
     }
 
-    // 왜 참조가 되는거지?
     private IEnumerator AnimateMovement(List<(Vector2 start, Vector2 end, RectTransform target)> moveList)
     {
         Debug.Log("Animation Movement");
@@ -199,7 +256,6 @@ public class Board : MonoBehaviour
             yield return null;
         }
 
-        // 마지막에 정확히 도착 지점으로 고정
         foreach (var move in moveList)
         {
             move.target.anchoredPosition = move.end;
@@ -208,14 +264,6 @@ public class Board : MonoBehaviour
 
     private (int blankCount, int maxDepth) ResearchMaxDepth((int blankCount, int maxDepth) _value, int index)
     {
-        // 잘 작동이 되지 않는 이유는 일단 maxDepth 부분을 초기화 해야 한다는 점이다.
-        // 어떻게 초기화 해야할 지 생각해야겠다. 
-        // Max Depth 부분이 채워졌어. 그러면 count를 확인해서 blankCount가 1이면 끝.
-        // 근데 2이상이다? 그러면 element에서 위로 돌면서 확인해야 하고 maxDepth를 확인하면 되겠다.
-        // 또한 blankCount--를 해주자.
-        // 그리고 검사할 때는 max -> init으로 확인하자.
-        // 장소를 옮기고 다시 하자.
-
         _value.blankCount--;
 
         if (_value.blankCount <= 0)
@@ -223,7 +271,6 @@ public class Board : MonoBehaviour
             return _value;
         }
 
-        // 이 부분에서 문제가 생긴듯 하다.
         for (int y = _value.maxDepth; y > 0; y--)
         {
             if (elements[index, y] == null)
@@ -233,7 +280,6 @@ public class Board : MonoBehaviour
             }
         }
 
-        // 위으 조건문을 통과 했다는 의미가 위 list에 null이 없다는 거니까 다 찼다는 뜻이다.
         _value.blankCount = 0;
         return _value;
     }
@@ -256,14 +302,11 @@ public class Board : MonoBehaviour
     {
         var blankList = new List<(int blankCount, int maxDepth)>();
 
-        // Initailze 흠.. 이 부분도 마음에 안 들긴해.
         for(int i = 0; i < width; i++)
         {
             blankList.Add((0, 0));
         }
-
-        // 비어 있는 곳의 x를 확인해서 빈 공간을 Check 한다.
-        // 최대 깊이도 확인하면 더 좋을 것 같다.
+        
         foreach(var remove in _removeList)
         {
             var listValue = blankList[remove.x];
@@ -277,7 +320,30 @@ public class Board : MonoBehaviour
 
         return blankList;
     }
+    #endregion
 
+    #region Destory 
+    private IEnumerator DestoryElement()
+    {
+        isProcessing = true;
+
+        Debug.Log("Destory Element");
+        // Destory
+        foreach (var remove in removeIndex)
+        {
+            if (elements[remove.x, remove.y] != null)
+            {
+                Destroy(elements[remove.x, remove.y]);
+                elements[remove.x, remove.y] = null;
+            }
+        }
+
+        yield return new WaitForSeconds(0.3f);
+        StartCoroutine(AnimationReFill());
+    }
+    #endregion
+
+    #region CheckBoard
     private void CheckBoard()
     {
         for(int j = 0; j < height; j++)
@@ -376,4 +442,5 @@ public class Board : MonoBehaviour
                 break;
         }
     }
+    #endregion
 }
