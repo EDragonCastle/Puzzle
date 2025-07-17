@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public enum Direction
 {
@@ -8,6 +9,7 @@ public enum Direction
     Horizontal,
     None,
 }
+
 public class Board : MonoBehaviour
 {
     [SerializeField]
@@ -19,6 +21,8 @@ public class Board : MonoBehaviour
     private readonly int cellSize = 110;
 
     private bool isProcessing;
+    private bool isInit;
+    private float duration = 0.2f;
 
     // 중앙에 위치해야 할 object다.
     private float startX;
@@ -36,14 +40,16 @@ public class Board : MonoBehaviour
     private List<(int x, int y)> saveIndex;
     private HashSet<(int x, int y)> removeIndex;
 
+    // return이 Score에 보내기 위해 필요한 event다.
+    public static event Action<int> scoreValue;
+
     // swap에 필요할 object
     [SerializeField]
     private GameObject swapObject;
 
-    private void Update()
+    private void Start()
     {
-        if (Input.GetKeyDown(KeyCode.K))
-            Initalize();
+        Initalize();
     }
 
     private void OnEnable()
@@ -55,6 +61,7 @@ public class Board : MonoBehaviour
     {
         Element.onClickElement -= SelectElement;
     }
+
     private void Initalize()
     {
         startX = -((width * 0.5f - 0.5f) * cellSize);
@@ -72,7 +79,7 @@ public class Board : MonoBehaviour
             for (int x = 0; x < width; x++)
             {
                 // prefab 개수에서 random 값 출력 및 object 생성과 부모 설정
-                var randIndex = Random.Range(0, prefab.Length);
+                var randIndex = UnityEngine.Random.Range(0, prefab.Length);
                 var newElement = Instantiate(prefab[randIndex]);
                 newElement.transform.SetParent(board.transform, false);
 
@@ -91,6 +98,7 @@ public class Board : MonoBehaviour
         CheckBoard();
     }
 
+    #region Swap
     // Swap을 구현할 차례다.
     private void SelectElement(GameObject _selectObject)
     {
@@ -101,7 +109,6 @@ public class Board : MonoBehaviour
         if (swapObject == null)
         {
             swapObject = _selectObject;
-            Debug.Log($"{swapObject} 선택했다.");
         }
         else
         {
@@ -128,6 +135,7 @@ public class Board : MonoBehaviour
 
     private IEnumerator SwapElement(GameObject _swapObject, GameObject changeObject, bool isReturn)
     {
+        isProcessing = true;
         // 일단 Rect Transform을 받아와.
         var firstObjectRectTransform = _swapObject.GetComponent<RectTransform>();
         var secondObjectRectTransform = changeObject.GetComponent<RectTransform>();
@@ -171,7 +179,6 @@ public class Board : MonoBehaviour
         changeObject = temp;
 
         // DFS로 가서 확인해야 하는데 두 개의 object를 확인하면 된다.
-
         if (!isReturn)
         {
             var visits = new bool[width, height];
@@ -201,6 +208,7 @@ public class Board : MonoBehaviour
             {
                 StartCoroutine(SwapElement(changeObject, _swapObject, true));
                 swapObject = null;
+                isProcessing = false;
             }
         }
     }
@@ -264,6 +272,7 @@ public class Board : MonoBehaviour
         }
         visits[x, y] = false;
     }
+    #endregion
 
     #region Refill
     private IEnumerator AnimationReFill()
@@ -287,7 +296,7 @@ public class Board : MonoBehaviour
                     continue;
 
                 // 먼저 Instaniate를 해야겠다!
-                var randIndex = Random.Range(0, prefab.Length);
+                var randIndex = UnityEngine.Random.Range(0, prefab.Length);
                 var newElement = Instantiate(prefab[randIndex]);
                 newElement.transform.SetParent(board.transform, false);
 
@@ -319,6 +328,8 @@ public class Board : MonoBehaviour
                     colors[x, y] = colors[x, y - 1];
                 }
 
+                var newIndex = newElement.GetComponent<Element>();
+                newIndex.SetPosition(x, 0);
                 elements[x, 0] = newElement;
                 colors[x, 0] = randIndex;
 
@@ -349,7 +360,6 @@ public class Board : MonoBehaviour
     {
         Debug.Log("Animation Movement");
         float elapsed = 0f;
-        float duration = 0.2f; // 이동 시간 (조절 가능)
 
         while (elapsed < duration)
         {
@@ -433,9 +443,10 @@ public class Board : MonoBehaviour
     #region Destory 
     private IEnumerator DestoryElement()
     {
-        isProcessing = true;
-
-        Debug.Log("Destory Element");
+        // 이것도 지금할게 아니야. 나중에 해야해 하는데 if문 다는 건 별론데.. 
+        if(!isInit)
+            scoreValue?.Invoke(removeIndex.Count);
+        
         // Destory
         foreach (var remove in removeIndex)
         {
@@ -446,7 +457,7 @@ public class Board : MonoBehaviour
             }
         }
 
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(duration);
         StartCoroutine(AnimationReFill());
     }
     #endregion
