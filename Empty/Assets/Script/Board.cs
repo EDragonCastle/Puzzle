@@ -444,8 +444,7 @@ public class Board : MonoBehaviour
     private IEnumerator DestoryElement()
     {
         // 이것도 지금할게 아니야. 나중에 해야해 하는데 if문 다는 건 별론데.. 
-        if(!isInit)
-            scoreValue?.Invoke(removeIndex.Count);
+        scoreValue?.Invoke(removeIndex.Count);
         
         // Destory
         foreach (var remove in removeIndex)
