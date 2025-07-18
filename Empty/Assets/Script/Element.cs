@@ -1,21 +1,48 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using System;
+
+// RectTransform을 반드시 넣어야 하는데 요구하는 거 넣어도 되지 않나?
+[RequireComponent(typeof(RectTransform))]
 public class Element : MonoBehaviour, IPointerDownHandler
 {
+    // Color랑 Position이랑 isVisits는 그냥 적용해도 괜찮은데
+    // Rect Transform은 바로 적용해야할 것 같다.
+    private RectTransform uiPosition;
+
+    // 이걸 이용할 것이다.
     [SerializeField]
-    private Vector2 index;
-    public void SetPosition(Vector2 _value) => index = _value;
-    public void SetPosition(int _x, int _y) => index = new Vector2(_x, _y);
-    public Vector2 GetPosition() => index;
+    private ElementInfo elementInfo;
+
+    #region Property RectTransform
+    public RectTransform GetUIPosition() => uiPosition;
+    public void SetUIPosition(RectTransform _uiPosition) => uiPosition = _uiPosition;
+    #endregion
+
+    #region Property ElementInfo
+    public ElementInfo GetElementInfo() => elementInfo;
+    public void SetElementInfo(ElementInfo info) => elementInfo = info;
+    #endregion
+
+
+    private void Awake()
+    {
+        uiPosition = this.GetComponent<RectTransform>();
+    }
 
     public static event Action<GameObject> onClickElement;
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        // 하지만 Board Class랑 지금 이 Class랑 Decoupling 되어야 한다.
-        // Board Class에 있는 private void SelectElement(GameObject _selectObject)에다 매개 변수로 this.GameObject를 넣을 것이다.
-        Debug.Log($"{index.x} {index.y}");
+        Debug.Log($"{elementInfo.position.x} {elementInfo.position.y}");
         onClickElement?.Invoke(this.gameObject);
     }
+}
+
+[System.Serializable]
+public struct ElementInfo
+{
+    public Vector2 position;
+    public int color;
+    public bool isVisits;
 }

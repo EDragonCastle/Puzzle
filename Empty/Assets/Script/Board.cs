@@ -32,7 +32,6 @@ public class Board : MonoBehaviour
     public GameObject board;
 
     // Board Object다.
-    private int[,] colors;
     private GameObject[,] elements;
 
     // DFS에 필요한 Index 저장할 변수
@@ -67,7 +66,6 @@ public class Board : MonoBehaviour
         startX = -((width * 0.5f - 0.5f) * cellSize);
         startY = ((height * 0.5f - 0.5f) * cellSize);
 
-        colors = new int[width, height];
         elements = new GameObject[width, height];
         tourIndex = new List<(int x, int y)>();
         saveIndex = new List<(int x, int y)>();
@@ -75,7 +73,6 @@ public class Board : MonoBehaviour
 
         for (int y = 0; y < height; y++)
         {
-            // 이건 left -> right로 생성하고 있고,
             for (int x = 0; x < width; x++)
             {
                 // prefab 개수에서 random 값 출력 및 object 생성과 부모 설정
@@ -83,15 +80,21 @@ public class Board : MonoBehaviour
                 var newElement = Instantiate(prefab[randIndex]);
                 newElement.transform.SetParent(board.transform, false);
 
-                // Object에서 Rect Transform를 받아오고, 위치 조절
-                var rectTransform = newElement.GetComponent<RectTransform>();
-                rectTransform.anchoredPosition = new Vector2(startX + x * cellSize, startY - y * cellSize);
+                // element initailze
+                var element = newElement.GetComponent<Element>();
+                var elementUIPos = element.GetUIPosition();
 
-                colors[x, y] = randIndex;
+                var elementInfo = new ElementInfo();
+
+                elementInfo.color = randIndex;
+                elementInfo.isVisits = false;
+                elementInfo.position = new Vector2(x, y);
+                elementUIPos.anchoredPosition = new Vector2(startX + x * cellSize, startY - y * cellSize);
+
+                element.SetUIPosition(elementUIPos);
+                element.SetElementInfo(elementInfo);
+
                 elements[x, y] = newElement;
-
-                var objectElement = newElement.GetComponent<Element>();
-                objectElement.SetPosition(x, y);
             }
         }
 
@@ -121,13 +124,8 @@ public class Board : MonoBehaviour
 
     private bool IsExistRangeElement(GameObject targetObject)
     {
-        // 먼저 swap전에 확인할 게 있다.
-        // 해당 image를 클릭해서 해당 요소의 index x, y 값을 알아야 해.
-        // 요소를 만들자!
-        // 그 다음 previous.xy - current.xy의 절대 값이 1이여야 swap이 가능하다. 아니면 swapObject = null
-        // 위 조건을 만족했으면 그 때 Swap을 한다.
-        var firstObjectIndex = swapObject.GetComponent<Element>().GetPosition();
-        var secondObjectIndex = targetObject.GetComponent<Element>().GetPosition();
+        var firstObjectIndex = swapObject.GetComponent<Element>().GetElementInfo().position;
+        var secondObjectIndex = targetObject.GetComponent<Element>().GetElementInfo().position;
 
         return Mathf.Abs(firstObjectIndex.x - secondObjectIndex.x) +
             Mathf.Abs(firstObjectIndex.y - secondObjectIndex.y) == 1 ? true : false;
@@ -136,54 +134,51 @@ public class Board : MonoBehaviour
     private IEnumerator SwapElement(GameObject _swapObject, GameObject changeObject, bool isReturn)
     {
         isProcessing = true;
-        // 일단 Rect Transform을 받아와.
-        var firstObjectRectTransform = _swapObject.GetComponent<RectTransform>();
-        var secondObjectRectTransform = changeObject.GetComponent<RectTransform>();
+
+        // 여기서 element, elementInfo를 가져오자.
+        var originObjectElement = _swapObject.GetComponent<Element>();
+        var changeObjectElement = changeObject.GetComponent<Element>();
+
+        var originObjectElementInfo = originObjectElement.GetElementInfo();
+        var changeObjectElementInfo = changeObjectElement.GetElementInfo();
+
+        var firstelementUIPos = originObjectElement.GetUIPosition();
+        var secondelementUIPos = changeObjectElement.GetUIPosition();
 
         // 초기 Swap할 Vector 위치
-        var firstObjectVector = new Vector2(firstObjectRectTransform.anchoredPosition.x, firstObjectRectTransform.anchoredPosition.y);
-        var secondObjectVector = new Vector2(secondObjectRectTransform.anchoredPosition.x, secondObjectRectTransform.anchoredPosition.y);
+        Vector2 firstObjectVector = new Vector2(firstelementUIPos.anchoredPosition.x, firstelementUIPos.anchoredPosition.y);
+        Vector2 secondObjectVector = new Vector2(secondelementUIPos.anchoredPosition.x, secondelementUIPos.anchoredPosition.y);
 
-        // 각자 object가 정해진 start와 end에 맞춰서 이동된다.
+        // Animation Refill에 필요한 parameter값 지정
         var moveList = new List<(Vector2 start, Vector2 end, RectTransform target)>();
-        moveList.Add((firstObjectVector, secondObjectVector, firstObjectRectTransform));
-        moveList.Add((secondObjectVector, firstObjectVector, secondObjectRectTransform));
+        moveList.Add((firstObjectVector, secondObjectVector, firstelementUIPos));
+        moveList.Add((secondObjectVector, firstObjectVector, secondelementUIPos));
 
         yield return StartCoroutine(AnimateMovement(moveList));
 
-        // Element Index도 교체해야해.
-        var swapIndex = _swapObject.GetComponent<Element>();
-        var changeIndex = changeObject.GetComponent<Element>();
+        // Position을 가져온다.
+        Vector2Int firstIndex = new Vector2Int((int)originObjectElementInfo.position.x, (int)originObjectElementInfo.position.y);
+        Vector2Int secondIndex = new Vector2Int((int)changeObjectElementInfo.position.x, (int)changeObjectElementInfo.position.y);
 
-        // index를 가져온다.
-        Vector2Int firstIndex = new Vector2Int((int)swapIndex.GetPosition().x, (int)swapIndex.GetPosition().y);
-        Vector2Int secondIndex = new Vector2Int((int)changeIndex.GetPosition().x, (int)changeIndex.GetPosition().y);
+        // index 값도 바꿔준다.
+        var tempIndex = originObjectElementInfo.position;
+        originObjectElementInfo.position = changeObjectElementInfo.position;
+        changeObjectElementInfo.position = tempIndex;
+        
+        // 설정을 마친다.
+        originObjectElement.SetElementInfo(originObjectElementInfo);
+        changeObjectElement.SetElementInfo(changeObjectElementInfo);
 
         // elements 값도 바꿔야한다.
         var tempElement = elements[firstIndex.x, firstIndex.y];
         elements[firstIndex.x, firstIndex.y] = elements[secondIndex.x, secondIndex.y];
         elements[secondIndex.x, secondIndex.y] = tempElement;
-
-        // Color도 바꿔야해.
-        var tempColor = colors[firstIndex.x, firstIndex.y];
-        colors[firstIndex.x, firstIndex.y] = colors[secondIndex.x, secondIndex.y];
-        colors[secondIndex.x, secondIndex.y] = tempColor;
-
-        var tempIndex = swapIndex.GetPosition();
-        swapIndex.SetPosition(changeIndex.GetPosition());
-        changeIndex.SetPosition(tempIndex);
-
-        // 그 다음에 Object를 바꿔주면 끝인가?
-        var temp = _swapObject;
-        _swapObject = changeObject;
-        changeObject = temp;
-
+        
+        // 왜 origine이 아니고 change냐면 SetElemeint로 확정했기 때문이다.
         // DFS로 가서 확인해야 하는데 두 개의 object를 확인하면 된다.
         if (!isReturn)
         {
-            var visits = new bool[width, height];
-
-            SwapDFS(visits, firstIndex.x, firstIndex.y, colors[firstIndex.x, firstIndex.y], Direction.None, 1);
+            SwapDFS(firstIndex.x, firstIndex.y, changeObjectElementInfo.color, Direction.None, 1);
             if (saveIndex.Count >= 3)
             {
                 foreach (var save in saveIndex)
@@ -193,7 +188,7 @@ public class Board : MonoBehaviour
             }
             tourIndex.Clear();
 
-            SwapDFS(visits, secondIndex.x, secondIndex.y, colors[secondIndex.x, secondIndex.y], Direction.None, 1);
+            SwapDFS(secondIndex.x, secondIndex.y, originObjectElementInfo.color, Direction.None, 1);
             if (saveIndex.Count >= 3)
             {
                 foreach (var save in saveIndex)
@@ -214,7 +209,7 @@ public class Board : MonoBehaviour
     }
 
     // 전방향을 확인해야 한다.
-    private void SwapDFS(bool[,] visits, int x, int y, int _color, Direction _direction, int count)
+    private void SwapDFS(int x, int y, int _color, Direction _direction, int count)
     {
         // 범위 넘어가면 돌아가자.
         if (x < 0 || width <= x || y < 0 || height <= y)
@@ -222,19 +217,18 @@ public class Board : MonoBehaviour
             return;
         }
 
-        if (visits[x, y])
-        {
-            return;
-        }
-
-        // 색이 다르다면 돌아가자. 
-        if (colors[x, y] != _color)
+        var element = elements[x, y].GetComponent<Element>();
+        var elementInfo = element.GetElementInfo();
+       
+        // 방문했는 지 확인 후 색깔이 다른지 확인한다.
+        if (elementInfo.isVisits || elementInfo.color != _color)
         {
             return;
         }
 
         count++;
-        visits[x, y] = true;
+        elementInfo.isVisits = true;
+        element.SetElementInfo(elementInfo);
 
         tourIndex.Add((x, y));
 
@@ -246,16 +240,16 @@ public class Board : MonoBehaviour
         switch (_direction)
         {
             case Direction.Horizontal:
-                SwapDFS(visits, x, y + 1, _color, Direction.Horizontal, count);
-                SwapDFS(visits, x, y - 1, _color, Direction.Horizontal, count);
+                SwapDFS(x, y + 1, _color, Direction.Horizontal, count);
+                SwapDFS(x, y - 1, _color, Direction.Horizontal, count);
                 break;
             case Direction.Vertical:
-                SwapDFS(visits, x + 1, y, _color, Direction.Vertical, count);
-                SwapDFS(visits, x - 1, y, _color, Direction.Vertical, count);
+                SwapDFS(x + 1, y, _color, Direction.Vertical, count);
+                SwapDFS(x - 1, y, _color, Direction.Vertical, count);
                 break;
             case Direction.None:
-                SwapDFS(visits, x + 1, y, _color, Direction.Vertical, count);
-                SwapDFS(visits, x - 1, y, _color, Direction.Vertical, count);
+                SwapDFS(x + 1, y, _color, Direction.Vertical, count);
+                SwapDFS(x - 1, y, _color, Direction.Vertical, count);
                 if (tourIndex.Count >= 3)
                 {
                     saveIndex = tourIndex;
@@ -266,22 +260,20 @@ public class Board : MonoBehaviour
                 }
                 tourIndex.Clear();
                 tourIndex.Add((x, y));
-                SwapDFS(visits, x, y + 1, _color, Direction.Horizontal, count);
-                SwapDFS(visits, x, y - 1, _color, Direction.Horizontal, count);
+                SwapDFS(x, y + 1, _color, Direction.Horizontal, count);
+                SwapDFS(x, y - 1, _color, Direction.Horizontal, count);
                 break;
         }
-        visits[x, y] = false;
+        elementInfo.isVisits = false;
+        element.SetElementInfo(elementInfo);
     }
     #endregion
 
     #region Refill
     private IEnumerator AnimationReFill()
     {
-        // 여기에 blank count랑 max Depth가 들어가 있다.
         var blankList = BlankCheckBoard(removeIndex);
 
-        // 아 List 사용하는 데 index가 x부분이여서 0부터 순회해야 하네? 
-        // 구조체로 바꾸면 메모리를 더 먹을까? 는 나중에 고려해야할 부분이고 지금은 index로 하자.
         bool isRunning = CheckBlank(blankList);
 
         while (!isRunning)
@@ -300,13 +292,23 @@ public class Board : MonoBehaviour
                 var newElement = Instantiate(prefab[randIndex]);
                 newElement.transform.SetParent(board.transform, false);
 
-                // 새로 생성한 newElement은 항상 [remove.x, 0]에 위치한다.
-                var rectTransform = newElement.GetComponent<RectTransform>();
-                var upperStartPos = new Vector2(startX + x * cellSize, startY - (-1) * cellSize);
-                var upperEndPos = new Vector2(startX + x * cellSize, startY - 0 * cellSize);
+                // StartPos, EndPos Setting
+                var newObjectElementComponent = newElement.GetComponent<Element>();
+                var newElementUIPos = newObjectElementComponent.GetUIPosition();
 
-                rectTransform.anchoredPosition = upperStartPos;
-                tourDict[rectTransform] = (upperStartPos, upperEndPos);
+                Vector2 upperStartPos = new Vector2(startX + x * cellSize, startY - (-1) * cellSize);
+                Vector2 upperEndPos = new Vector2(startX + x * cellSize, startY - 0 * cellSize);
+                tourDict[newElementUIPos] = (upperStartPos, upperEndPos);
+
+                var newElementInfo = new ElementInfo();
+
+                newElementInfo.color = randIndex;
+                newElementInfo.isVisits = false;
+                newElementInfo.position = new Vector2(x, 0);
+                newElementUIPos.anchoredPosition = upperStartPos;
+
+                newObjectElementComponent.SetUIPosition(newElementUIPos);
+                newObjectElementComponent.SetElementInfo(newElementInfo);
 
                 // 이런 식으로 진행해야겠네? 이러면 한 번만해서 공백이 생겨서 remove.y에 해당하는 애들을 전부 옮겨야해.
                 for (int y = value.maxDepth; y > 0; y--)
@@ -314,24 +316,24 @@ public class Board : MonoBehaviour
                     if (elements[x, y - 1] != null)
                     {
                         var moveObject = elements[x, y - 1];
-                        var objectRectTransform = moveObject.GetComponent<RectTransform>();
 
-                        Vector2 startPos = objectRectTransform.anchoredPosition;
+                        var element = moveObject.GetComponent<Element>();
+                        var elementInfo = element.GetElementInfo();
+                        var elementUIPos = element.GetUIPosition();
+
+                        elementInfo.position = new Vector2(x, y);
+                        element.SetElementInfo(elementInfo);
+
+                        Vector2 startPos = elementUIPos.anchoredPosition;
                         Vector2 endPos = new Vector2(startX + x * cellSize, startY - y * cellSize);
 
-                        tourDict[objectRectTransform] = (startPos, endPos);
-
-                        var moveIndex = moveObject.GetComponent<Element>();
-                        moveIndex.SetPosition(x, y);
+                        tourDict[elementUIPos] = (startPos, endPos);
                     }
+                    
                     elements[x, y] = elements[x, y - 1];
-                    colors[x, y] = colors[x, y - 1];
                 }
-
-                var newIndex = newElement.GetComponent<Element>();
-                newIndex.SetPosition(x, 0);
+    
                 elements[x, 0] = newElement;
-                colors[x, 0] = randIndex;
 
                 if (elements[x, value.maxDepth] != null)
                     blankList[x] = ResearchMaxDepth(value, x);
@@ -443,7 +445,6 @@ public class Board : MonoBehaviour
     #region Destory 
     private IEnumerator DestoryElement()
     {
-        // 이것도 지금할게 아니야. 나중에 해야해 하는데 if문 다는 건 별론데.. 
         scoreValue?.Invoke(removeIndex.Count);
         
         // Destory
@@ -468,7 +469,8 @@ public class Board : MonoBehaviour
         {
             for (int i = 0; i < width; i++)
             {
-                DFS(i, j, colors[i, j], Direction.None, 1);
+                var color = elements[i, j].GetComponent<Element>().GetElementInfo().color;
+                DFS(i, j, color, Direction.None, 1);
             }
         }
 
@@ -492,8 +494,8 @@ public class Board : MonoBehaviour
             return;
         }
 
-        // 3. 색이 다르다면 return 
-        if (colors[x, y] != _color)
+        int currentColor = elements[x, y].GetComponent<Element>().GetElementInfo().color;
+        if (currentColor != _color)
         {
             if (saveIndex.Count >= 3)
             {
@@ -506,46 +508,26 @@ public class Board : MonoBehaviour
             return;
         }
 
-        // 위에 조건들을 만족하지 않고 통과했다면 
-        // 색이 같은 것이다.
-        // count++를 늘려야겠다. 그리고 Vertical인지 Horizontal인지 확인해야 할 것 같은데?
         count++;
 
         tourIndex.Add((x, y));
-        // count가 3이상이면 깨질 블럭이다. 지금 깨지는 건 아닌데 어떻게 해야할까?
 
-        // 문제점이 생겼다. 맨 처음 None일 때 vertical, Horizontal 둘다 검사해서 vertical에서 count 3개 이상이여서 저장이 됐지만, horizontal에서 3개 이상이면 전에 있던 data가 사라질 수 있다.
         if (tourIndex.Count >= 3)
         {
-            // ref type이라 tourIndex가 Clear 되면 같이 사라진다.
             saveIndex = tourIndex;
         }
 
-        // direction을 만든 이유?
-        // vertical이면 vertical로 가고, horizontal이면 horizontal로 조사해야 하기 때문이다.
-        // 근데 맨 처음에는 None으로 들어갈텐데? None일 때는 양쪽 다 들어가봐야 하는데?
-
-        // 그러면 검사도 오른쪽과 아래만 검사해도 될 것 같은데 굳이 4방향을 검사해야 할 필요를 못 느끼겠다.
-        // 왜냐하면 맨 처음 검사할 때만 사용하는 것이기 때문이다. 나중에 Swap 할 때는 상하좌우를 전부 확인해야 할 것 같지만
-        // 지금은 필요없는 듯하다.
         switch (_direction)
         {
             case Direction.Horizontal:
-                // DFS Function ... Horizontal
-                //DFS() 에서 Y+1을 해주자.
                 DFS(x, y + 1, _color, Direction.Horizontal, count);
                 break;
             case Direction.Vertical:
-                // DFS Function ... Vertical
-                // DFS() 에서 x+1을 해주자.
                 DFS(x + 1, y, _color, Direction.Vertical, count);
                 break;
             case Direction.None:
-                // Horizontal, Vertical 각각 이건 for문으로 한번에 검사하려 했는데 그냥 하나씩 넣는게 더 괜찮아 보인다.
-                // DFS() X+1, Y+1을 해주자.
                 DFS(x + 1, y, _color, Direction.Vertical, count);
 
-                // 나갈 때 이미 사라졌기 때문에 추가해주는 것이다.
                 tourIndex.Add((x, y));
                 if (tourIndex.Count >= 3)
                 {
