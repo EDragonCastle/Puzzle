@@ -42,6 +42,8 @@ public class Board : MonoBehaviour
     // return이 Score에 보내기 위해 필요한 event다.
     public static event Action<int> scoreValue;
 
+    private int swapCount = 0;
+
     // swap에 필요할 object
     [SerializeField]
     private GameObject swapObject;
@@ -98,7 +100,7 @@ public class Board : MonoBehaviour
             }
         }
 
-        CheckBoard();
+        InitCheckBoard();
     }
 
     #region Swap
@@ -204,7 +206,21 @@ public class Board : MonoBehaviour
                 StartCoroutine(SwapElement(changeObject, _swapObject, true));
                 swapObject = null;
                 isProcessing = false;
+
+                // 이 곳이 swap이 되지 않았을 때야.
+                FailSwap();
             }
+        }
+    }
+
+    private void FailSwap()
+    {
+        swapCount++;
+        if(swapCount > 10)
+        {
+            Debug.Log("game over");
+            // Resource에서 GameOver Prefab 호출하자.
+            swapCount = 0;
         }
     }
 
@@ -476,6 +492,103 @@ public class Board : MonoBehaviour
 
         if (removeIndex.Count > 0)
             StartCoroutine(DestoryElement());
+    }
+    #endregion
+
+    #region Initalize Setting Board
+    private void InitCheckBoard()
+    {
+        for (int j = 0; j < height; j++)
+        {
+            for (int i = 0; i < width; i++)
+            {
+                var color = elements[i, j].GetComponent<Element>().GetElementInfo().color;
+                DFS(i, j, color, Direction.None, 1);
+            }
+        }
+
+        // Coroutine이 아닌 삭제함수로 바로 가야해.
+        if (removeIndex.Count > 0)
+            InitDestroyElement();   
+    }
+
+    private void InitDestroyElement()
+    {
+        foreach (var remove in removeIndex)
+        {
+            if (elements[remove.x, remove.y] != null)
+            {
+                Destroy(elements[remove.x, remove.y]);
+                elements[remove.x, remove.y] = null;
+            }
+        }
+
+        Refill();
+    }
+
+    private void Refill()
+    {
+        var blankList = BlankCheckBoard(removeIndex);
+        bool isRunning = CheckBlank(blankList);
+
+        while (!isRunning)
+        {
+            for (int x = 0; x < blankList.Count; x++)
+            {
+                var value = blankList[x];
+
+                if (value.blankCount <= 0)
+                    continue;
+
+                // 먼저 Instaniate를 해야겠다!
+                var randIndex = UnityEngine.Random.Range(0, prefab.Length);
+                var newElement = Instantiate(prefab[randIndex]);
+                newElement.transform.SetParent(board.transform, false);
+
+                // StartPos, EndPos Setting
+                var newObjectElementComponent = newElement.GetComponent<Element>();
+                var newElementUIPos = newObjectElementComponent.GetUIPosition();
+
+                var newElementInfo = new ElementInfo();
+
+                newElementInfo.color = randIndex;
+                newElementInfo.isVisits = false;
+                newElementInfo.position = new Vector2(x, 0);
+                newElementUIPos.anchoredPosition = new Vector2(startX + x * cellSize, startY - 0 * cellSize);
+
+                newObjectElementComponent.SetElementInfo(newElementInfo);
+
+                for (int y = value.maxDepth; y > 0; y--)
+                {
+                    if (elements[x, y - 1] != null)
+                    {
+                        var moveObject = elements[x, y - 1];
+
+                        var element = moveObject.GetComponent<Element>();
+                        var elementInfo = element.GetElementInfo();
+                        var elementUIPos = element.GetUIPosition();
+
+                        elementInfo.position = new Vector2(x, y);
+                        element.SetElementInfo(elementInfo);
+
+                        elementUIPos.anchoredPosition = new Vector2(startX + x * cellSize, startY - y * cellSize);
+                    }
+
+                    elements[x, y] = elements[x, y - 1];
+                }
+
+                elements[x, 0] = newElement;
+
+                if (elements[x, value.maxDepth] != null)
+                    blankList[x] = ResearchMaxDepth(value, x);
+            }
+
+            isRunning = CheckBlank(blankList);
+        }
+
+        removeIndex.Clear();
+        InitCheckBoard();
+        isProcessing = false;
     }
 
     private void DFS(int x, int y, int _color, Direction _direction, int count)
