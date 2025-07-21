@@ -10,6 +10,14 @@ public enum Direction
     None,
 }
 
+public enum Test
+{
+    One,
+    Two,
+    Three,
+    None,
+}
+
 public class Board : MonoBehaviour
 {
     [SerializeField]
@@ -203,7 +211,7 @@ public class Board : MonoBehaviour
                 StartCoroutine(DestoryElement());
             else
             {
-                StartCoroutine(SwapElement(changeObject, _swapObject, true));
+                yield return StartCoroutine(SwapElement(changeObject, _swapObject, true));
                 swapObject = null;
                 isProcessing = false;
 
@@ -216,11 +224,27 @@ public class Board : MonoBehaviour
     private void FailSwap()
     {
         swapCount++;
-        if(swapCount > 10)
+        if(swapCount >= 10)
         {
             Debug.Log("game over");
-            // Resource에서 GameOver Prefab 호출하자.
+
+            // 위에 UI 생성
+            for(int y = 0; y < height; y++)
+            {
+                for(int x = 0; x < width; x++)
+                {
+                    if(elements[x, y] != null)
+                    {
+                        Destroy(elements[x, y]);
+                        elements[x, y] = null;
+                    }
+                }
+            }
             swapCount = 0;
+
+            // Resource에서 GameOver Prefab 호출하고 재시작 해야 한다.
+            Debug.Log("game start");
+            Initalize();
         }
     }
 
