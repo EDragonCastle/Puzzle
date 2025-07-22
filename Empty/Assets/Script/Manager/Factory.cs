@@ -3,19 +3,19 @@ using UnityEngine;
 public class Factory
 {
     private ElementCategory category;
-    private ObjectPool objectPools;
+    private ObjectPoolManager objectPools;
 
     #region Factory Construct
     public Factory(ElementCategory _category, GameObject parent = null)
     {
         category = _category;
-        objectPools = new ObjectPool(_category, parent);
+        objectPools = new ObjectPoolManager(_category, parent);
     }
 
     public Factory(ElementCategory _category, int poolInitSize, GameObject parent = null )
     {
         category = _category;
-        objectPools = new ObjectPool(_category, poolInitSize, parent);
+        objectPools = new ObjectPoolManager(_category, poolInitSize, parent);
     }
     #endregion
 

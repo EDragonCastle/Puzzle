@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ObjectPool
+public class ObjectPoolManager
 {
     private readonly ElementCategory category;
     private readonly int initalizeLength;
@@ -10,7 +10,7 @@ public class ObjectPool
     private GameObject saveObjectPools;
 
     #region Object Pool Construct
-    public ObjectPool(ElementCategory _category, GameObject parent = null)
+    public ObjectPoolManager(ElementCategory _category, GameObject parent = null)
     {
         category = _category;
         initalizeLength = 20;
@@ -19,7 +19,7 @@ public class ObjectPool
         Initialize();
     }
 
-    public ObjectPool(ElementCategory _category, int length, GameObject parent = null)
+    public ObjectPoolManager(ElementCategory _category, int length, GameObject parent = null)
     {
         category = _category;
         initalizeLength = length;
