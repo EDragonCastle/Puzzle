@@ -27,7 +27,8 @@ public class Score : MonoBehaviour ,IChannel
         switch(channel)
         {
             case ChannelInfo.Score:
-                ChangeScore((int)information);
+                if(information is int value)
+                    ChangeScore(value);
                 break;
         }
     }
