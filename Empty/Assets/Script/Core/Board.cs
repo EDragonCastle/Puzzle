@@ -10,14 +10,6 @@ public enum Direction
     None,
 }
 
-public enum Test
-{
-    One,
-    Two,
-    Three,
-    None,
-}
-
 public class Board : MonoBehaviour
 {
     [SerializeField]
@@ -29,7 +21,6 @@ public class Board : MonoBehaviour
     private readonly int cellSize = 110;
 
     private bool isProcessing;
-    private bool isInit;
     private float duration = 0.2f;
 
     // 중앙에 위치해야 할 object다.
@@ -40,7 +31,7 @@ public class Board : MonoBehaviour
     public GameObject board;
 
     // Board Object다.
-    private GameObject[,] elements;
+    private IUIElement[,] uiElements;
 
     // DFS에 필요한 Index 저장할 변수
     private List<(int x, int y)> tourIndex;
@@ -53,8 +44,10 @@ public class Board : MonoBehaviour
     private int swapCount = 0;
 
     // swap에 필요할 object
-    [SerializeField]
-    private GameObject swapObject;
+    private IUIElement swapObject;
+
+    // Factory
+    private Factory objectFactory;
 
     private void Start()
     {
@@ -76,35 +69,26 @@ public class Board : MonoBehaviour
         startX = -((width * 0.5f - 0.5f) * cellSize);
         startY = ((height * 0.5f - 0.5f) * cellSize);
 
-        elements = new GameObject[width, height];
+        uiElements = new IUIElement[width, height];
         tourIndex = new List<(int x, int y)>();
         saveIndex = new List<(int x, int y)>();
         removeIndex = new HashSet<(int x, int y)>();
+
+        objectFactory = Locator.GetFactory();
 
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
-                // prefab 개수에서 random 값 출력 및 object 생성과 부모 설정
                 var randIndex = UnityEngine.Random.Range(0, prefab.Length);
-                var newElement = Instantiate(prefab[randIndex]);
-                newElement.transform.SetParent(board.transform, false);
+                var position = new Vector2(startX + x * cellSize, startY - y * cellSize);
 
-                // element initailze
-                var element = newElement.GetComponent<Element>();
-                var elementUIPos = element.GetUIPosition();
+                var newElement = objectFactory.CreateUIObject((ElementColor)randIndex, position, Quaternion.identity, Vector3.one, board.transform);
+                var info = newElement.GetElementInfo();
+                info.position = new Vector2(x, y);
+                newElement.SetElementInfo(info);
 
-                var elementInfo = new ElementInfo();
-
-                elementInfo.color = randIndex;
-                elementInfo.isVisits = false;
-                elementInfo.position = new Vector2(x, y);
-                elementUIPos.anchoredPosition = new Vector2(startX + x * cellSize, startY - y * cellSize);
-
-                element.SetUIPosition(elementUIPos);
-                element.SetElementInfo(elementInfo);
-
-                elements[x, y] = newElement;
+                uiElements[x, y] = newElement;
             }
         }
 
@@ -113,7 +97,7 @@ public class Board : MonoBehaviour
 
     #region Swap
     // Swap을 구현할 차례다.
-    private void SelectElement(GameObject _selectObject)
+    private void SelectElement(IUIElement _selectObject)
     {
         if (isProcessing)
             return;
@@ -132,28 +116,24 @@ public class Board : MonoBehaviour
         }
     }
 
-    private bool IsExistRangeElement(GameObject targetObject)
+    private bool IsExistRangeElement(IUIElement targetObject)
     {
-        var firstObjectIndex = swapObject.GetComponent<Element>().GetElementInfo().position;
-        var secondObjectIndex = targetObject.GetComponent<Element>().GetElementInfo().position;
+        var firstObjectIndex = swapObject.GetElementInfo().position;
+        var secondObjectIndex = targetObject.GetElementInfo().position;
 
         return Mathf.Abs(firstObjectIndex.x - secondObjectIndex.x) +
             Mathf.Abs(firstObjectIndex.y - secondObjectIndex.y) == 1 ? true : false;
     }
 
-    private IEnumerator SwapElement(GameObject _swapObject, GameObject changeObject, bool isReturn)
+    private IEnumerator SwapElement(IUIElement _swapObject, IUIElement changeObject, bool isReturn)
     {
         isProcessing = true;
 
-        // 여기서 element, elementInfo를 가져오자.
-        var originObjectElement = _swapObject.GetComponent<Element>();
-        var changeObjectElement = changeObject.GetComponent<Element>();
+        var originObjectElementInfo = _swapObject.GetElementInfo();
+        var changeObjectElementInfo = changeObject.GetElementInfo();
 
-        var originObjectElementInfo = originObjectElement.GetElementInfo();
-        var changeObjectElementInfo = changeObjectElement.GetElementInfo();
-
-        var firstelementUIPos = originObjectElement.GetUIPosition();
-        var secondelementUIPos = changeObjectElement.GetUIPosition();
+        var firstelementUIPos = _swapObject.GetRectTransform();
+        var secondelementUIPos = changeObject.GetRectTransform();
 
         // 초기 Swap할 Vector 위치
         Vector2 firstObjectVector = new Vector2(firstelementUIPos.anchoredPosition.x, firstelementUIPos.anchoredPosition.y);
@@ -174,15 +154,15 @@ public class Board : MonoBehaviour
         var tempIndex = originObjectElementInfo.position;
         originObjectElementInfo.position = changeObjectElementInfo.position;
         changeObjectElementInfo.position = tempIndex;
-        
+
         // 설정을 마친다.
-        originObjectElement.SetElementInfo(originObjectElementInfo);
-        changeObjectElement.SetElementInfo(changeObjectElementInfo);
+        _swapObject.SetElementInfo(originObjectElementInfo);
+        changeObject.SetElementInfo(changeObjectElementInfo);
 
         // elements 값도 바꿔야한다.
-        var tempElement = elements[firstIndex.x, firstIndex.y];
-        elements[firstIndex.x, firstIndex.y] = elements[secondIndex.x, secondIndex.y];
-        elements[secondIndex.x, secondIndex.y] = tempElement;
+        var tempElement = uiElements[firstIndex.x, firstIndex.y];
+        uiElements[firstIndex.x, firstIndex.y] = uiElements[secondIndex.x, secondIndex.y];
+        uiElements[secondIndex.x, secondIndex.y] = tempElement;
         
         // 왜 origine이 아니고 change냐면 SetElemeint로 확정했기 때문이다.
         // DFS로 가서 확인해야 하는데 두 개의 object를 확인하면 된다.
@@ -208,16 +188,16 @@ public class Board : MonoBehaviour
             }
             tourIndex.Clear();
             if (removeIndex.Count > 0)
+            {
                 StartCoroutine(DestoryElement());
+            }
             else
             {
                 yield return StartCoroutine(SwapElement(changeObject, _swapObject, true));
-                swapObject = null;
                 isProcessing = false;
-
-                // 이 곳이 swap이 되지 않았을 때야.
                 FailSwap();
             }
+            swapObject = null;
         }
     }
 
@@ -233,10 +213,10 @@ public class Board : MonoBehaviour
             {
                 for(int x = 0; x < width; x++)
                 {
-                    if(elements[x, y] != null)
+                    if(uiElements[x, y] != null)
                     {
-                        Destroy(elements[x, y]);
-                        elements[x, y] = null;
+                        Destroy(uiElements[x, y].GetGameObject());
+                        uiElements[x, y] = null;
                     }
                 }
             }
@@ -257,8 +237,7 @@ public class Board : MonoBehaviour
             return;
         }
 
-        var element = elements[x, y].GetComponent<Element>();
-        var elementInfo = element.GetElementInfo();
+        var elementInfo = uiElements[x, y].GetElementInfo();
        
         // 방문했는 지 확인 후 색깔이 다른지 확인한다.
         if (elementInfo.isVisits || elementInfo.color != _color)
@@ -268,7 +247,7 @@ public class Board : MonoBehaviour
 
         count++;
         elementInfo.isVisits = true;
-        element.SetElementInfo(elementInfo);
+        uiElements[x, y].SetElementInfo(elementInfo);
 
         tourIndex.Add((x, y));
 
@@ -305,7 +284,7 @@ public class Board : MonoBehaviour
                 break;
         }
         elementInfo.isVisits = false;
-        element.SetElementInfo(elementInfo);
+        uiElements[x, y].SetElementInfo(elementInfo);
     }
     #endregion
 
@@ -313,7 +292,6 @@ public class Board : MonoBehaviour
     private IEnumerator AnimationReFill()
     {
         var blankList = BlankCheckBoard(removeIndex);
-
         bool isRunning = CheckBlank(blankList);
 
         while (!isRunning)
@@ -327,42 +305,31 @@ public class Board : MonoBehaviour
                 if (value.blankCount <= 0)
                     continue;
 
-                // 먼저 Instaniate를 해야겠다!
-                var randIndex = UnityEngine.Random.Range(0, prefab.Length);
-                var newElement = Instantiate(prefab[randIndex]);
-                newElement.transform.SetParent(board.transform, false);
-
                 // StartPos, EndPos Setting
-                var newObjectElementComponent = newElement.GetComponent<Element>();
-                var newElementUIPos = newObjectElementComponent.GetUIPosition();
-
+                var randIndex = UnityEngine.Random.Range(0, prefab.Length);
                 Vector2 upperStartPos = new Vector2(startX + x * cellSize, startY - (-1) * cellSize);
                 Vector2 upperEndPos = new Vector2(startX + x * cellSize, startY - 0 * cellSize);
+
+                var newElement = objectFactory.CreateUIObject((ElementColor)randIndex, upperStartPos, Quaternion.identity, Vector3.one, board.transform);
+                var newElementUIPos = newElement.GetRectTransform();
                 tourDict[newElementUIPos] = (upperStartPos, upperEndPos);
 
-                var newElementInfo = new ElementInfo();
-
-                newElementInfo.color = randIndex;
-                newElementInfo.isVisits = false;
+                var newElementInfo = newElement.GetElementInfo();
                 newElementInfo.position = new Vector2(x, 0);
-                newElementUIPos.anchoredPosition = upperStartPos;
-
-                newObjectElementComponent.SetUIPosition(newElementUIPos);
-                newObjectElementComponent.SetElementInfo(newElementInfo);
+                newElement.SetElementInfo(newElementInfo);
 
                 // 이런 식으로 진행해야겠네? 이러면 한 번만해서 공백이 생겨서 remove.y에 해당하는 애들을 전부 옮겨야해.
                 for (int y = value.maxDepth; y > 0; y--)
                 {
-                    if (elements[x, y - 1] != null)
+                    if (uiElements[x, y - 1] != null)
                     {
-                        var moveObject = elements[x, y - 1];
+                        var moveObject = uiElements[x, y - 1];
 
-                        var element = moveObject.GetComponent<Element>();
-                        var elementInfo = element.GetElementInfo();
-                        var elementUIPos = element.GetUIPosition();
+                        var elementInfo = moveObject.GetElementInfo();
+                        var elementUIPos = moveObject.GetRectTransform();
 
                         elementInfo.position = new Vector2(x, y);
-                        element.SetElementInfo(elementInfo);
+                        moveObject.SetElementInfo(elementInfo);
 
                         Vector2 startPos = elementUIPos.anchoredPosition;
                         Vector2 endPos = new Vector2(startX + x * cellSize, startY - y * cellSize);
@@ -370,12 +337,12 @@ public class Board : MonoBehaviour
                         tourDict[elementUIPos] = (startPos, endPos);
                     }
                     
-                    elements[x, y] = elements[x, y - 1];
+                    uiElements[x, y] = uiElements[x, y - 1];
                 }
-    
-                elements[x, 0] = newElement;
 
-                if (elements[x, value.maxDepth] != null)
+                uiElements[x, 0] = newElement;
+
+                if (uiElements[x, value.maxDepth] != null)
                     blankList[x] = ResearchMaxDepth(value, x);
             }
 
@@ -433,7 +400,7 @@ public class Board : MonoBehaviour
 
         for (int y = _value.maxDepth; y > 0; y--)
         {
-            if (elements[index, y] == null)
+            if (uiElements[index, y] == null)
             {
                 _value.maxDepth = y;
                 return _value;
@@ -490,10 +457,10 @@ public class Board : MonoBehaviour
         // Destory
         foreach (var remove in removeIndex)
         {
-            if (elements[remove.x, remove.y] != null)
+            if (uiElements[remove.x, remove.y] != null)
             {
-                Destroy(elements[remove.x, remove.y]);
-                elements[remove.x, remove.y] = null;
+                Destroy(uiElements[remove.x, remove.y].GetGameObject());
+                uiElements[remove.x, remove.y] = null;
             }
         }
 
@@ -509,7 +476,7 @@ public class Board : MonoBehaviour
         {
             for (int i = 0; i < width; i++)
             {
-                var color = elements[i, j].GetComponent<Element>().GetElementInfo().color;
+                var color = uiElements[i, j].GetElementInfo().color;
                 DFS(i, j, color, Direction.None, 1);
             }
         }
@@ -526,7 +493,7 @@ public class Board : MonoBehaviour
         {
             for (int i = 0; i < width; i++)
             {
-                var color = elements[i, j].GetComponent<Element>().GetElementInfo().color;
+                var color = uiElements[i, j].GetElementInfo().color;
                 DFS(i, j, color, Direction.None, 1);
             }
         }
@@ -540,10 +507,10 @@ public class Board : MonoBehaviour
     {
         foreach (var remove in removeIndex)
         {
-            if (elements[remove.x, remove.y] != null)
+            if (uiElements[remove.x, remove.y] != null)
             {
-                Destroy(elements[remove.x, remove.y]);
-                elements[remove.x, remove.y] = null;
+                objectFactory.DestoryUIObject(uiElements[remove.x, remove.y].GetGameObject());
+                uiElements[remove.x, remove.y] = null;
             }
         }
 
@@ -563,47 +530,36 @@ public class Board : MonoBehaviour
 
                 if (value.blankCount <= 0)
                     continue;
-
-                // 먼저 Instaniate를 해야겠다!
+                
                 var randIndex = UnityEngine.Random.Range(0, prefab.Length);
-                var newElement = Instantiate(prefab[randIndex]);
-                newElement.transform.SetParent(board.transform, false);
+                Vector2 position = new Vector2(startX + x * cellSize, startY - 0 * cellSize);
+                var newElement = objectFactory.CreateUIObject((ElementColor)randIndex, position, Quaternion.identity, Vector3.one, board.transform);
 
-                // StartPos, EndPos Setting
-                var newObjectElementComponent = newElement.GetComponent<Element>();
-                var newElementUIPos = newObjectElementComponent.GetUIPosition();
-
-                var newElementInfo = new ElementInfo();
-
-                newElementInfo.color = randIndex;
-                newElementInfo.isVisits = false;
+                var newElementInfo = newElement.GetElementInfo();
                 newElementInfo.position = new Vector2(x, 0);
-                newElementUIPos.anchoredPosition = new Vector2(startX + x * cellSize, startY - 0 * cellSize);
-
-                newObjectElementComponent.SetElementInfo(newElementInfo);
+                newElement.SetElementInfo(newElementInfo);
 
                 for (int y = value.maxDepth; y > 0; y--)
                 {
-                    if (elements[x, y - 1] != null)
+                    if (uiElements[x, y - 1] != null)
                     {
-                        var moveObject = elements[x, y - 1];
+                        var moveObject = uiElements[x, y - 1];
 
-                        var element = moveObject.GetComponent<Element>();
-                        var elementInfo = element.GetElementInfo();
-                        var elementUIPos = element.GetUIPosition();
+                        var elementInfo = moveObject.GetElementInfo();
+                        var elementUIPos = moveObject.GetRectTransform();
 
                         elementInfo.position = new Vector2(x, y);
-                        element.SetElementInfo(elementInfo);
+                        moveObject.SetElementInfo(elementInfo);
 
                         elementUIPos.anchoredPosition = new Vector2(startX + x * cellSize, startY - y * cellSize);
                     }
 
-                    elements[x, y] = elements[x, y - 1];
+                    uiElements[x, y] = uiElements[x, y - 1];
                 }
 
-                elements[x, 0] = newElement;
+                uiElements[x, 0] = newElement;
 
-                if (elements[x, value.maxDepth] != null)
+                if (uiElements[x, value.maxDepth] != null)
                     blankList[x] = ResearchMaxDepth(value, x);
             }
 
@@ -631,7 +587,7 @@ public class Board : MonoBehaviour
             return;
         }
 
-        int currentColor = elements[x, y].GetComponent<Element>().GetElementInfo().color;
+        int currentColor = uiElements[x, y].GetElementInfo().color;
         if (currentColor != _color)
         {
             if (saveIndex.Count >= 3)

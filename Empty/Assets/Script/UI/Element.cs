@@ -3,32 +3,30 @@ using UnityEngine.EventSystems;
 using System;
 
 [RequireComponent(typeof(RectTransform))]
-public class Element : MonoBehaviour, IPointerDownHandler
+public class Element : MonoBehaviour, IPointerDownHandler, IUIElement
 {
-    private RectTransform uiPosition;
+    [SerializeField]
     private ElementInfo elementInfo;
+    private RectTransform rectTransform;
 
-    #region Property RectTransform
-    public RectTransform GetUIPosition() => uiPosition;
-    public void SetUIPosition(RectTransform _uiPosition) => uiPosition = _uiPosition;
-    #endregion
-
-    #region Property ElementInfo
+    #region IUIElement Interface Methord
     public ElementInfo GetElementInfo() => elementInfo;
     public void SetElementInfo(ElementInfo info) => elementInfo = info;
+    public RectTransform GetRectTransform() => rectTransform;
+    public GameObject GetGameObject() => this.gameObject;
     #endregion
 
-    private void Awake()
-    {
-        uiPosition = this.GetComponent<RectTransform>();
-    }
+    public static event Action<IUIElement> onClickElement;
 
-    public static event Action<GameObject> onClickElement;
+    public void Awake()
+    {
+        rectTransform = this.GetComponent<RectTransform>();
+    }
 
     public void OnPointerDown(PointerEventData eventData)
     {
         Debug.Log($"{elementInfo.position.x} {elementInfo.position.y}");
-        onClickElement?.Invoke(this.gameObject);
+        onClickElement?.Invoke(this.gameObject.GetComponent<IUIElement>());
     }
 }
 
