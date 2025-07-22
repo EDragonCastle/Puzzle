@@ -174,12 +174,42 @@ MonoBehaviour:
   width: 6
   height: 8
   prefab:
+  - {fileID: 6615528416676336860, guid: 16add188cdce0204880b8a0df3c47e06, type: 3}
   - {fileID: 292515530495128279, guid: 5e6e05f1682b3844d9b0c5ca7d8d2441, type: 3}
   - {fileID: 5845794147731172467, guid: 9eb1385cfbc30fb4c93453ae77017531, type: 3}
-  - {fileID: 6615528416676336860, guid: 16add188cdce0204880b8a0df3c47e06, type: 3}
   - {fileID: 4677655624022632470, guid: 94646af9c029dbf4c856e21b91ee4908, type: 3}
   board: {fileID: 199852633}
-  swapObject: {fileID: 0}
+--- !u!1 &419284969
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 419284970}
+  m_Layer: 0
+  m_Name: ObjectPools Dummy
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &419284970
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 419284969}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 420.00937, y: 1633.2104, z: -944.89996}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &649266900
 GameObject:
   m_ObjectHideFlags: 0
@@ -636,6 +666,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   elementCategory: {fileID: 1625607951}
+  objectPoolDummy: {fileID: 419284969}
 --- !u!4 &1585777996
 Transform:
   m_ObjectHideFlags: 0

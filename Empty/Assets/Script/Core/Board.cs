@@ -459,7 +459,7 @@ public class Board : MonoBehaviour
         {
             if (uiElements[remove.x, remove.y] != null)
             {
-                Destroy(uiElements[remove.x, remove.y].GetGameObject());
+                objectFactory.DestoryUIObject(uiElements[remove.x, remove.y].GetGameObject());
                 uiElements[remove.x, remove.y] = null;
             }
         }
