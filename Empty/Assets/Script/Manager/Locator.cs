@@ -5,11 +5,16 @@ public static class Locator
     public static void ProvideFactory(Factory _factory) => factory = _factory;
     public static Factory GetFactory() => factory;
 
-    // object pool
-    // 근데 필요 없어보인다. 아직 Effect나 그런게 안 들어가서 필요 없어 보이는 것일지도 모른다.
-    // 
-
     // observer
+    private static EventManager eventManager;
+    public static void ProvideEventManager(EventManager _eventManager) => eventManager = _eventManager;
+    public static EventManager GetEventManager() => eventManager;
 
-    // ...
+}
+
+public static class GenericLocator<T>
+{
+    private static T test;
+    public static void Provide(T _value) => test = _value;
+    public static T Get() => test;
 }

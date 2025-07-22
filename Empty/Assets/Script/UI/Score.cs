@@ -1,24 +1,35 @@
 using UnityEngine;
 using TMPro;
 
-public class Score : MonoBehaviour
+public class Score : MonoBehaviour ,IChannel
 {
     public TextMeshProUGUI textMeshPro;
 
-
-    private void Start()
+    private EventManager eventManager;
+    private void Awake()
     {
+        eventManager = Locator.GetEventManager();
         textMeshPro.text = "0";
     }
 
     private void OnEnable()
     {
-        Board.scoreValue += ChangeScore;
+        eventManager.Subscription(ChannelInfo.Score, HandleEvent);
     }
 
     private void OnDisable()
     {
-        Board.scoreValue -= ChangeScore;
+        eventManager.Unsubscription(ChannelInfo.Score, HandleEvent);
+    }
+
+    public void HandleEvent(ChannelInfo channel, object information = null)
+    {
+        switch(channel)
+        {
+            case ChannelInfo.Score:
+                ChangeScore((int)information);
+                break;
+        }
     }
 
     private void ChangeScore(int value)

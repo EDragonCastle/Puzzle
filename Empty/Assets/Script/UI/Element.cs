@@ -16,8 +16,6 @@ public class Element : MonoBehaviour, IPointerDownHandler, IUIElement
     public GameObject GetGameObject() => this.gameObject;
     #endregion
 
-    public static event Action<IUIElement> onClickElement;
-
     public void Awake()
     {
         rectTransform = this.GetComponent<RectTransform>();
@@ -26,7 +24,8 @@ public class Element : MonoBehaviour, IPointerDownHandler, IUIElement
     public void OnPointerDown(PointerEventData eventData)
     {
         Debug.Log($"{elementInfo.position.x} {elementInfo.position.y}");
-        onClickElement?.Invoke(this.gameObject.GetComponent<IUIElement>());
+        var eventManager = Locator.GetEventManager();
+        eventManager.Notify(ChannelInfo.Select, this.gameObject);
     }
 }
 

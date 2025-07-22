@@ -8,10 +8,17 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject objectPoolDummy;
 
-    void Start()
+    private void Awake()
     {
         Factory factory = new Factory(elementCategory, objectPoolDummy);
         Locator.ProvideFactory(factory);
+        
+        EventManager eventManager = new EventManager();
+        Locator.ProvideEventManager(eventManager);
+
+        // Generic Test
+        GenericLocator<Factory>.Provide(factory);
+        GenericLocator<EventManager>.Provide(eventManager);
     }
 
 }

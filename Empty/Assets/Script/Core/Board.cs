@@ -10,7 +10,7 @@ public enum Direction
     None,
 }
 
-public class Board : MonoBehaviour
+public class Board : MonoBehaviour, IChannel
 {
     [SerializeField]
     private int width = 6;
@@ -39,7 +39,7 @@ public class Board : MonoBehaviour
     private HashSet<(int x, int y)> removeIndex;
 
     // return이 Score에 보내기 위해 필요한 event다.
-    public static event Action<int> scoreValue;
+    private EventManager eventManager;
 
     private int swapCount = 0;
 
@@ -49,6 +49,15 @@ public class Board : MonoBehaviour
     // Factory
     private Factory objectFactory;
 
+    private void Awake()
+    {
+        //objectFactory = Locator.GetFactory();
+        //eventManager = Locator.GetEventManager();
+
+        objectFactory = GenericLocator<Factory>.Get();
+        eventManager = GenericLocator<EventManager>.Get();
+    }
+
     private void Start()
     {
         Initalize();
@@ -56,13 +65,29 @@ public class Board : MonoBehaviour
 
     private void OnEnable()
     {
-        Element.onClickElement += SelectElement;
+        eventManager.Subscription(ChannelInfo.Select, HandleEvent);
     }
 
     private void OnDisable()
     {
-        Element.onClickElement -= SelectElement;
+        eventManager.Unsubscription(ChannelInfo.Select, HandleEvent);
     }
+
+    public void HandleEvent(ChannelInfo channel, object _information)
+    {
+        switch(channel)
+        {
+            case ChannelInfo.Select:
+                GameObject gameObject = _information as GameObject;
+                if(gameObject != null)
+                {
+                    var objectIUIElement = gameObject.GetComponent<IUIElement>();
+                    SelectElement(objectIUIElement);
+                }
+                break;
+        }
+    }
+    
 
     private void Initalize()
     {
@@ -73,9 +98,7 @@ public class Board : MonoBehaviour
         tourIndex = new List<(int x, int y)>();
         saveIndex = new List<(int x, int y)>();
         removeIndex = new HashSet<(int x, int y)>();
-
-        objectFactory = Locator.GetFactory();
-
+        
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
@@ -452,7 +475,7 @@ public class Board : MonoBehaviour
     #region Destory 
     private IEnumerator DestoryElement()
     {
-        scoreValue?.Invoke(removeIndex.Count);
+        eventManager.Notify(ChannelInfo.Score, removeIndex.Count);
         
         // Destory
         foreach (var remove in removeIndex)
