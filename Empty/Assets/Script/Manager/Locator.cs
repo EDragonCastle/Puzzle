@@ -1,3 +1,5 @@
+
+/* Legacy Lacator
 public static class Locator
 {
     // factory
@@ -9,12 +11,12 @@ public static class Locator
     private static EventManager eventManager;
     public static void ProvideEventManager(EventManager _eventManager) => eventManager = _eventManager;
     public static EventManager GetEventManager() => eventManager;
-
 }
+*/
 
-public static class GenericLocator<T>
+public static class Locator<T>
 {
-    private static T test;
-    public static void Provide(T _value) => test = _value;
-    public static T Get() => test;
+    private static T manager;
+    public static void Provide(T _manager) => manager = _manager;
+    public static T Get() => manager;
 }

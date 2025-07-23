@@ -2,6 +2,7 @@
 {
     Select,
     Score,
+    ResetScore,
     End,
 }
 

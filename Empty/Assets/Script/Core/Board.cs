@@ -38,38 +38,41 @@ public class Board : MonoBehaviour, IChannel
     private List<(int x, int y)> saveIndex;
     private HashSet<(int x, int y)> removeIndex;
 
-    // return이 Score에 보내기 위해 필요한 event다.
-    private EventManager eventManager;
-
     private int swapCount = 0;
 
     // swap에 필요할 object
     private IUIElement swapObject;
 
-    // Factory
+    // Manager
     private Factory objectFactory;
+    private EventManager eventManager;
+    private UIManager uiManager;
+
+    // Life Setting
+    [SerializeField]
+    private GameObject lifeParent;
+
+    private Life life;
+    private GameObject[] lifes;
+    private int maxLife;
 
     private void Awake()
     {
-        //objectFactory = Locator.GetFactory();
-        //eventManager = Locator.GetEventManager();
-
-        objectFactory = GenericLocator<Factory>.Get();
-        eventManager = GenericLocator<EventManager>.Get();
-    }
-
-    private void Start()
-    {
+        objectFactory = Locator<Factory>.Get();
+        eventManager = Locator<EventManager>.Get();
+        uiManager = Locator<UIManager>.Get();
         Initalize();
     }
 
     private void OnEnable()
     {
+        Enable();
         eventManager.Subscription(ChannelInfo.Select, HandleEvent);
     }
 
     private void OnDisable()
     {
+        DisEnable();
         eventManager.Unsubscription(ChannelInfo.Select, HandleEvent);
     }
 
@@ -84,10 +87,9 @@ public class Board : MonoBehaviour, IChannel
                     var objectIUIElement = gameObject.GetComponent<IUIElement>();
                     SelectElement(objectIUIElement);
                 }
-                break;
+            break;
         }
     }
-    
 
     private void Initalize()
     {
@@ -98,7 +100,26 @@ public class Board : MonoBehaviour, IChannel
         tourIndex = new List<(int x, int y)>();
         saveIndex = new List<(int x, int y)>();
         removeIndex = new HashSet<(int x, int y)>();
+
+        maxLife = MaxLifeSetting(Level.Easy);
+        lifes = new GameObject[maxLife];
+        var lifePrefab = uiManager.GetUIPrefab(UIPrefab.Life);
         
+        for(int i = 0; i < maxLife; i++)
+        {
+            lifes[i] = GameObject.Instantiate(lifePrefab);
+        }
+    }
+
+    private void Enable()
+    {
+        tourIndex.Clear();
+        saveIndex.Clear();
+        removeIndex.Clear();
+
+        maxLife = MaxLifeSetting(uiManager.GetDegree());
+        life = new Life(maxLife, lifes, lifeParent);
+
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
@@ -116,6 +137,11 @@ public class Board : MonoBehaviour, IChannel
         }
 
         InitCheckBoard();
+    }
+
+    private int MaxLifeSetting(Level _degree)
+    {
+        return ((int)(Level.Hard) - (int)_degree + 1) * 2 - 1;
     }
 
     #region Swap
@@ -224,30 +250,40 @@ public class Board : MonoBehaviour, IChannel
         }
     }
 
+    private void DisEnable()
+    {
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (uiElements[x, y] != null)
+                {
+                    objectFactory.DestoryUIObject(uiElements[x, y].GetGameObject());
+                    uiElements[x, y] = null;
+                }
+            }
+        }
+    }
+
     private void FailSwap()
     {
         swapCount++;
-        if(swapCount >= 10)
+        life.DestoryLife(swapCount);
+
+        if (!life.DestoryLife(swapCount))
         {
             Debug.Log("game over");
 
             // 위에 UI 생성
-            for(int y = 0; y < height; y++)
-            {
-                for(int x = 0; x < width; x++)
-                {
-                    if(uiElements[x, y] != null)
-                    {
-                        Destroy(uiElements[x, y].GetGameObject());
-                        uiElements[x, y] = null;
-                    }
-                }
-            }
-            swapCount = 0;
+            DisEnable();
 
-            // Resource에서 GameOver Prefab 호출하고 재시작 해야 한다.
-            Debug.Log("game start");
-            Initalize();
+            swapCount = 0;
+            eventManager.Notify(ChannelInfo.ResetScore);
+            var uiManager = Locator<UIManager>.Get();
+            var gameOver = uiManager.GetUIPrefabObject(UIPrefab.Gameover);
+            gameOver.SetActive(true);
+            var uiBoard = uiManager.GetUIPrefabObject(UIPrefab.Board);
+            uiBoard.SetActive(false);
         }
     }
 

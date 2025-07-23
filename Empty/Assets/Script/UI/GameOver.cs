@@ -3,11 +3,30 @@ using UnityEngine.UI;
 
 public class GameOver : MonoBehaviour
 {
-    [SerializeField]
-    private Button restart;
-    [SerializeField]
-    private Button title;
+    private GameObject title;
+    private GameObject gameOver;
+    private GameObject board;
 
-    // restart를 누르면 재시작한다.
-    // title를 누르면 title로 간다.
+    private void Start()
+    {
+        var uiManager = Locator<UIManager>.Get();
+        title = uiManager.GetUIPrefabObject(UIPrefab.Title);
+        gameOver = uiManager.GetUIPrefabObject(UIPrefab.Gameover);
+        board = uiManager.GetUIPrefabObject(UIPrefab.Board);
+    }
+
+
+    public void GameStart()
+    {
+        title.SetActive(false);
+        gameOver.SetActive(false);
+        board.SetActive(true);
+    }
+
+    public void Title()
+    {
+        title.SetActive(true);
+        gameOver.SetActive(false);
+        board.SetActive(false);
+    }
 }

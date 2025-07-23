@@ -8,17 +8,27 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject objectPoolDummy;
 
+    [SerializeField]
+    private UIPrefabCategory uiPrefabCategory;
+
     private void Awake()
     {
+        // Manager constuctor
         Factory factory = new Factory(elementCategory, objectPoolDummy);
-        Locator.ProvideFactory(factory);
-        
         EventManager eventManager = new EventManager();
-        Locator.ProvideEventManager(eventManager);
+        UIManager uiManager = new UIManager(uiPrefabCategory);
 
-        // Generic Test
-        GenericLocator<Factory>.Provide(factory);
-        GenericLocator<EventManager>.Provide(eventManager);
+        // Provide Locator
+        Locator<Factory>.Provide(factory);
+        Locator<EventManager>.Provide(eventManager);
+        Locator<UIManager>.Provide(uiManager);
+    }
+
+    private void Start()
+    {
+        var uiManager = Locator<UIManager>.Get();
+        var title = uiManager.GetUIPrefabObject(UIPrefab.Title);
+        title.SetActive(true);
     }
 
 }

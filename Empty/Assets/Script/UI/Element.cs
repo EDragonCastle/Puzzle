@@ -24,7 +24,7 @@ public class Element : MonoBehaviour, IPointerDownHandler, IUIElement
     public void OnPointerDown(PointerEventData eventData)
     {
         Debug.Log($"{elementInfo.position.x} {elementInfo.position.y}");
-        var eventManager = Locator.GetEventManager();
+        var eventManager = Locator<EventManager>.Get();
         eventManager.Notify(ChannelInfo.Select, this.gameObject);
     }
 }

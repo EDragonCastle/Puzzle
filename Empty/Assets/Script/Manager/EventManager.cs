@@ -48,7 +48,7 @@ public class EventManager
         }
     }
 
-    public void Notify(ChannelInfo channelType, object eventInfo)
+    public void Notify(ChannelInfo channelType, object eventInfo = null)
     {
         if(channels.ContainsKey(channelType))
         {

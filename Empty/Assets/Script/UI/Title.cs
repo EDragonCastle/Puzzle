@@ -3,12 +3,67 @@ using UnityEngine.UI;
 
 public class Title : MonoBehaviour
 {
-    [SerializeField]
-    private Button gameStart;
-    [SerializeField]
-    private Button gameExit;
-    
-    // Game Start Button누르면 GameBoard로 이동해야 한다.
+    private GameObject title;
+    private GameObject gameOver;
+    private GameObject board;
 
-    // Game Exit를 누르면 게임을 끝내야 한다.
+    private UIManager uiManager;
+
+    private void Awake()
+    {
+        uiManager = Locator<UIManager>.Get();
+        title = uiManager.GetUIPrefabObject(UIPrefab.Title);
+        gameOver = uiManager.GetUIPrefabObject(UIPrefab.Gameover);
+        board = uiManager.GetUIPrefabObject(UIPrefab.Board);
+
+        // 일단 기본값
+        uiManager.SetDegree(Level.Easy);
+        title.SetActive(true);
+        gameOver.SetActive(false);
+        board.SetActive(false);
+    }
+
+    public void Easy()
+    {
+        uiManager.SetDegree(Level.Easy);
+        GameStart();
+    }
+
+    public void Normal()
+    {
+        uiManager.SetDegree(Level.Normal);
+        GameStart();
+    }
+
+    public void Hard()
+    {
+        uiManager.SetDegree(Level.Hard);
+        GameStart();
+    }
+
+    // 난이도에 따른 변화도 생각해야 한다.
+    // 아주 간단한 방법이다. 미리 생성해두고 setActive true, false를 해주면 된다.
+    public void GameStart()
+    {
+        title.SetActive(false);
+        gameOver.SetActive(false);
+        board.SetActive(true);
+    }
+
+    public void GameExit()
+    {
+        // 게임 종료
+        Application.Quit();
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
+    }
+}
+
+public enum Level
+{
+    Easy,
+    Normal,
+    Hard,
 }
