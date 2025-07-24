@@ -15,8 +15,11 @@
 # Firebase Specific Files (Critical for Security!)
 # These contain sensitive API keys and project IDs.
 # Never commit these to a public repository.
-/Assets/google-services.json
-/Assets/GoogleService-Info.plist
+/Assets/Server/FireBase Server/ExternalDependencyManager/
+/Assets/Server/FireBase Server/Firebase/
+/Assets/Server/FireBase Server/Model/
+/Assets/Server/FireBase Server/Plugins/
+/Assets/Server/FireBase Server/StreamingAssets/
 
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be commited to version control.
 *.blend1
