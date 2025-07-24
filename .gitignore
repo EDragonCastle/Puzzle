@@ -12,6 +12,12 @@
 [Uu]ser[Ss]ettings/
 *.log
 
+# Firebase Specific Files (Critical for Security!)
+# These contain sensitive API keys and project IDs.
+# Never commit these to a public repository.
+/Assets/google-services.json
+/Assets/GoogleService-Info.plist
+
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be commited to version control.
 *.blend1
 *.blend1.meta
@@ -97,3 +103,17 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Created by https://www.toptal.com/developers/gitignore/api/firebase
+# Edit at https://www.toptal.com/developers/gitignore?templates=firebase
+
+### Firebase ###
+.idea
+**/node_modules/*
+**/.firebaserc
+
+### Firebase Patch ###
+.runtimeconfig.json
+.firebase/
+
+# End of https://www.toptal.com/developers/gitignore/api/firebase
