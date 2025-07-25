@@ -11,17 +11,21 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private UIPrefabCategory uiPrefabCategory;
 
-    private void Awake()
+    private async void Awake()
     {
         // Manager constuctor
         Factory factory = new Factory(elementCategory, objectPoolDummy);
         EventManager eventManager = new EventManager();
         UIManager uiManager = new UIManager(uiPrefabCategory);
 
+        EDCServer server = new EDCServer();
+        await server.InitalizeFirebase();
+
         // Provide Locator
         Locator<Factory>.Provide(factory);
         Locator<EventManager>.Provide(eventManager);
         Locator<UIManager>.Provide(uiManager);
+        Locator<EDCServer>.Provide(server);
     }
 
     private void Start()

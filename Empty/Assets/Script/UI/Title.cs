@@ -6,6 +6,7 @@ public class Title : MonoBehaviour
     private GameObject title;
     private GameObject gameOver;
     private GameObject board;
+    private GameObject rank;
 
     private UIManager uiManager;
 
@@ -15,12 +16,14 @@ public class Title : MonoBehaviour
         title = uiManager.GetUIPrefabObject(UIPrefab.Title);
         gameOver = uiManager.GetUIPrefabObject(UIPrefab.Gameover);
         board = uiManager.GetUIPrefabObject(UIPrefab.Board);
+        rank = uiManager.GetUIPrefabObject(UIPrefab.Rank);
 
         // 일단 기본값
         uiManager.SetDegree(Level.Easy);
         title.SetActive(true);
         gameOver.SetActive(false);
         board.SetActive(false);
+        rank.SetActive(false);
     }
 
     public void Easy()
@@ -48,6 +51,15 @@ public class Title : MonoBehaviour
         title.SetActive(false);
         gameOver.SetActive(false);
         board.SetActive(true);
+        rank.SetActive(false);
+    }
+
+    public void Rank()
+    {
+        title.SetActive(true);
+        gameOver.SetActive(false);
+        board.SetActive(false);
+        rank.SetActive(true);
     }
 
     public void GameExit()

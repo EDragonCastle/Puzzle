@@ -6,6 +6,7 @@ public class GameOver : MonoBehaviour
     private GameObject title;
     private GameObject gameOver;
     private GameObject board;
+    private GameObject ranking;
 
     private void Start()
     {
@@ -13,6 +14,7 @@ public class GameOver : MonoBehaviour
         title = uiManager.GetUIPrefabObject(UIPrefab.Title);
         gameOver = uiManager.GetUIPrefabObject(UIPrefab.Gameover);
         board = uiManager.GetUIPrefabObject(UIPrefab.Board);
+        ranking = uiManager.GetUIPrefabObject(UIPrefab.Rank);
     }
 
 
@@ -20,6 +22,7 @@ public class GameOver : MonoBehaviour
     {
         title.SetActive(false);
         gameOver.SetActive(false);
+        ranking.SetActive(false);
         board.SetActive(true);
     }
 
@@ -28,5 +31,17 @@ public class GameOver : MonoBehaviour
         title.SetActive(true);
         gameOver.SetActive(false);
         board.SetActive(false);
+        ranking.SetActive(false);
     }
+
+    public void Rank()
+    {
+        title.SetActive(false);
+        gameOver.SetActive(true);
+        board.SetActive(false);
+        ranking.SetActive(true);
+    }
+
+    // 아 근데 setactive true, false 이거 마음에 안 드네
+    // 일단 보류하고 지금은 랭킹이나 신경쓰자.
 }

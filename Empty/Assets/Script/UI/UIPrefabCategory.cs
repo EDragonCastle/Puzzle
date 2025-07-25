@@ -12,6 +12,8 @@ public class UIPrefabCategory : MonoBehaviour
     private GameObject board;
     [SerializeField]
     private GameObject life;
+    [SerializeField]
+    private GameObject rank;
 
     public GameObject GetUIPrefab(UIPrefab prefabType)
     {
@@ -30,6 +32,9 @@ public class UIPrefabCategory : MonoBehaviour
             case UIPrefab.Life:
                 prefab = life;
                 break;
+            case UIPrefab.Rank:
+                prefab = rank;
+                break;
         }
 
         return prefab;
@@ -41,6 +46,7 @@ public enum UIPrefab
     Title,
     Board,
     Gameover,
+    Rank,
     Life,
     End,
 }
