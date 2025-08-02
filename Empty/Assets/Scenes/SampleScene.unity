@@ -415,7 +415,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e26f4d4122d5a041b29854b9dbd3e39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  closeButtonObject: {fileID: 1097859309}
+  closeButtonObject: {fileID: 0}
 --- !u!4 &536632160
 Transform:
   m_ObjectHideFlags: 0
@@ -627,7 +627,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &987140731
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -730,7 +730,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1012276380
 Transform:
   m_ObjectHideFlags: 0

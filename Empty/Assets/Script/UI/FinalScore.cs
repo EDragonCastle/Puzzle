@@ -19,6 +19,7 @@ public class FinalScore : MonoBehaviour
         int score = 0;
         if(int.TryParse(textMeshPro.text, out score))
         {
+            /*
             if(await server.IsScoreRanker(score))
             {
                 // 점수가 들어간다.
@@ -30,6 +31,7 @@ public class FinalScore : MonoBehaviour
                 // 들어오지 않았다.
                 Debug.Log("None Puzzle Number");
             }
+             */
         }
         else
         {

@@ -2,10 +2,8 @@ using UnityEngine;
 using GoogleMobileAds.Api;
 using UnityEngine.UI;
 using System;
-
-public class TestAD : MonoBehaviour
+public class AdManager : MonoBehaviour
 {
-    
 
 #if UNITY_ANDROID
     private string adUnitId = "ca-app-pub-3940256099942544/6300978111";
@@ -27,7 +25,7 @@ public class TestAD : MonoBehaviour
     {
         Debug.Log("Createing Banner View");
 
-        if(bannerView != null)
+        if (bannerView != null)
         {
             DestoryBanner();
         }
@@ -36,10 +34,10 @@ public class TestAD : MonoBehaviour
         bannerView = new BannerView(adUnitId, AdSize.Banner, currentAdPosition);
 
         // 세부 크기 조절
-        
+
         var adSize = new AdSize(200, 250);
         bannerView = new BannerView(adUnitId, adSize, AdPosition.Top);
-        
+
 
         // 세부 위치 조절
         // bannerView = new BannerView(adUnitId, AdSize.Banner, 0, 50);
@@ -51,7 +49,7 @@ public class TestAD : MonoBehaviour
 
     public void LoadAd()
     {
-        if(bannerView == null)
+        if (bannerView == null)
         {
             CreateBannerView();
         }
@@ -73,7 +71,7 @@ public class TestAD : MonoBehaviour
             float loadAdWidthSize = bannerView.GetWidthInPixels();
             float loadAdHeightSize = bannerView.GetHeightInPixels();
 
-            if(closeButtonObject != null)
+            if (closeButtonObject != null)
             {
                 closeButtonObject.SetActive(true);
                 // 위치 조절
@@ -113,21 +111,21 @@ public class TestAD : MonoBehaviour
         bannerView.OnAdFullScreenContentClosed += () =>
         {
             Debug.Log("Banner view full screen content closed");
-            if(closeButtonObject != null)
+            if (closeButtonObject != null)
             {
                 closeButtonObject.SetActive(true);
-            }    
+            }
         };
     }
 
     public void DestoryBanner()
     {
-        if(bannerView != null)
+        if (bannerView != null)
         {
             Debug.Log("Destory Banner view");
             bannerView.Destroy();
             bannerView = null;
-            if(closeButtonObject != null)
+            if (closeButtonObject != null)
             {
                 closeButtonObject.SetActive(false);
             }
@@ -149,7 +147,7 @@ public class TestAD : MonoBehaviour
         }
 
         var canvasScaler = closeButtonObject.GetComponentInParent<CanvasScaler>();
-        if(canvasScaler == null)
+        if (canvasScaler == null)
         {
             Debug.Log("None Exist CanvasScaler Component in closeButton Object");
             return;
@@ -167,7 +165,7 @@ public class TestAD : MonoBehaviour
 
     private void LoadInterstitialAd()
     {
-        if(interstitialAd != null)
+        if (interstitialAd != null)
         {
             interstitialAd.Destroy();
             interstitialAd = null;
@@ -179,7 +177,7 @@ public class TestAD : MonoBehaviour
 
         InterstitialAd.Load(adUnitId, adRequest, (InterstitialAd ad, LoadAdError error) =>
         {
-            if(error != null || ad == null)
+            if (error != null || ad == null)
             {
                 Debug.LogError($"interstital ad failed to load ad with error : {error}");
                 return;
@@ -195,7 +193,7 @@ public class TestAD : MonoBehaviour
 
     private void ShowInterstitialAd()
     {
-        if(interstitialAd != null && interstitialAd.CanShowAd())
+        if (interstitialAd != null && interstitialAd.CanShowAd())
         {
             Debug.Log("Showing interstital ad.");
             interstitialAd.Show();
@@ -264,26 +262,26 @@ public class TestAD : MonoBehaviour
             MediaAspectRatio = MediaAspectRatio.Any,
         };
 
-        NativeOverlayAd.Load(adUnitId, adRequest, options, 
+        NativeOverlayAd.Load(adUnitId, adRequest, options,
             (NativeOverlayAd ad, LoadAdError error) =>
-        {
-            if(error != null)
             {
-                Debug.LogError($"Native Overlay ad failed to load ad with error : {error}");
-                return;
-            }
+                if (error != null)
+                {
+                    Debug.LogError($"Native Overlay ad failed to load ad with error : {error}");
+                    return;
+                }
 
-            if(ad == null)
-            {
-                Debug.LogError("Unexpected error : Native Overlay ad load event fired with null ad and null error");
-                return;
-            }
+                if (ad == null)
+                {
+                    Debug.LogError("Unexpected error : Native Overlay ad load event fired with null ad and null error");
+                    return;
+                }
 
-            Debug.Log($"Native Overlay ad loaded with response : {ad.GetResponseInfo()}");
-            nativeOverlayAd = ad;
-            RegisterNativeAd(nativeOverlayAd);
-            RenderNativeOverlayAd();
-        });
+                Debug.Log($"Native Overlay ad loaded with response : {ad.GetResponseInfo()}");
+                nativeOverlayAd = ad;
+                RegisterNativeAd(nativeOverlayAd);
+                RenderNativeOverlayAd();
+            });
     }
 
     private void RegisterNativeAd(NativeOverlayAd registerAd)
@@ -316,7 +314,7 @@ public class TestAD : MonoBehaviour
 
     private void RenderNativeOverlayAd()
     {
-        if(nativeOverlayAd != null)
+        if (nativeOverlayAd != null)
         {
             Debug.Log("Rendering Native Ad");
 
@@ -339,7 +337,7 @@ public class TestAD : MonoBehaviour
 
     private void ShowNativeOverlayAd()
     {
-        if(nativeOverlayAd != null)
+        if (nativeOverlayAd != null)
         {
             Debug.Log("Show Native overlay ad");
             nativeOverlayAd.Show();
@@ -348,7 +346,7 @@ public class TestAD : MonoBehaviour
 
     private void HideNativeOverlayAd()
     {
-        if(nativeOverlayAd != null)
+        if (nativeOverlayAd != null)
         {
             Debug.Log("Hiding Native Overlay Ad");
             nativeOverlayAd.Hide();
@@ -357,7 +355,7 @@ public class TestAD : MonoBehaviour
 
     private void DestoryNativeOverlayAd()
     {
-        if(nativeOverlayAd != null)
+        if (nativeOverlayAd != null)
         {
             Debug.Log("Destory Native Overlay Ad");
             nativeOverlayAd.Destroy();
@@ -374,7 +372,7 @@ public class TestAD : MonoBehaviour
 
     private void LoadRewardedAd()
     {
-        if(rewardedAd != null)
+        if (rewardedAd != null)
         {
             rewardedAd.Destroy();
             rewardedAd = null;
@@ -414,7 +412,7 @@ public class TestAD : MonoBehaviour
 
     private void ShowRewardedAd()
     {
-        if(rewardedAd != null && rewardedAd.CanShowAd())
+        if (rewardedAd != null && rewardedAd.CanShowAd())
         {
             rewardedAd.Show((Reward reward) =>
             {
@@ -466,7 +464,7 @@ public class TestAD : MonoBehaviour
 
     private void LoadRewardedInterstitialAd()
     {
-        if(rewardedInterstitialAd != null)
+        if (rewardedInterstitialAd != null)
         {
             rewardedInterstitialAd.Destroy();
             rewardedInterstitialAd = null;
@@ -482,7 +480,7 @@ public class TestAD : MonoBehaviour
         RewardedInterstitialAd.Load(adUnitId, adRequest,
             (RewardedInterstitialAd ad, LoadAdError error) =>
             {
-                if(error != null || ad == null)
+                if (error != null || ad == null)
                 {
                     Debug.LogError($"rewarded interstitial ad failed to load an ad with error: {error}");
                     return;
@@ -554,7 +552,7 @@ public class TestAD : MonoBehaviour
 
     private void LoadAppOpenAd()
     {
-        if(appOpenAd != null)
+        if (appOpenAd != null)
         {
             appOpenAd.Destroy();
             appOpenAd = null;
@@ -567,7 +565,7 @@ public class TestAD : MonoBehaviour
         AppOpenAd.Load(adUnitId, adRequest,
             (AppOpenAd ad, LoadAdError error) =>
             {
-                if(error != null || ad == null)
+                if (error != null || ad == null)
                 {
                     Debug.LogError($"App open ad Failed to load ad with error : {error}");
                     return;
@@ -643,24 +641,23 @@ public class TestAD : MonoBehaviour
             //CreateBannerView();
             //LoadInterstitialAd();
             //LoadNativeOverlayAd();
-            
-            
+
+
             LoadRewardedAd();
-            RegisterRewardAd(rewardedAd); 
+            RegisterRewardAd(rewardedAd);
             ShowRewardedAd();
-            
-            
-            
+
+
+
             LoadRewardedInterstitialAd();
             RegisterRewardInterstitialAd(rewardedInterstitialAd);
             ShowRewardInterstitialAd();
-            
+
         });
 
-        if(closeButtonObject != null)
+        if (closeButtonObject != null)
         {
             closeButtonObject.SetActive(false);
         }
     }
-
 }

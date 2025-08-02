@@ -139,6 +139,21 @@ public class Board : MonoBehaviour, IChannel
         InitCheckBoard();
     }
 
+    private void DisEnable()
+    {
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (uiElements[x, y] != null)
+                {
+                    objectFactory.DestoryUIObject(uiElements[x, y].GetGameObject());
+                    uiElements[x, y] = null;
+                }
+            }
+        }
+    }
+
     private int MaxLifeSetting(Level _degree)
     {
         return ((int)(Level.Hard) - (int)_degree + 1) * 2 - 1;
@@ -247,21 +262,6 @@ public class Board : MonoBehaviour, IChannel
                 FailSwap();
             }
             swapObject = null;
-        }
-    }
-
-    private void DisEnable()
-    {
-        for (int y = 0; y < height; y++)
-        {
-            for (int x = 0; x < width; x++)
-            {
-                if (uiElements[x, y] != null)
-                {
-                    objectFactory.DestoryUIObject(uiElements[x, y].GetGameObject());
-                    uiElements[x, y] = null;
-                }
-            }
         }
     }
 
