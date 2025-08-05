@@ -1,16 +1,21 @@
-Shader "Bubble/Sprite Normal"
+Shader "Bubble/Bubble Element"
 {
-    
     Properties  // Properties Unity Inspector에 조절할 수 있는 변수
     {
-        
+        [Header(Sprite Normal Setting)]
         _Color ("Tint", Color) = (1,1,1,1)                          // 색상 조절하는 변수. 기본값 : 흰색
         _MainTex ("Sprite Texture", 2D) = "white" {}                // Sprite 기본 Texture. 기본값 : 흰색
         _NormalMap ("Normal Map", 2D) = "bump" {}                   // Sprite Normal Texture. 기본값 : bump
         _NormalStrength ("Normal Strength", Range(0.0, 2.0)) = 1.0  // Normal Map의 강도. 기본값 : 1
         _LightIntensity ("Light Intensity", Range(0.0, 2.0)) = 1.0  // Light 강도. 기본값 : 1
-    }
 
+        [Space(10)]
+
+        [Header(Outline Setting)]
+        _OutlineColor ("Sprite Outline Color", Color) = (1,1,1,1)
+        _OutlineAnimationSpeed ("Outline Speed", Range(0.1, 10)) = 1
+        _OutlineMode ("Outline Mode", float) = 0.0
+    }
     
     SubShader   // 여러 개의 Rendering 방법을 정의할 수 있다. 여기서는 하나의 SubShader만 사용한다.
     {
@@ -19,7 +24,9 @@ Shader "Bubble/Sprite Normal"
         Blend SrcAlpha OneMinusSrcAlpha // Pixel의 투명도를 처리한다. Blend는 Pixel Color와 Background Color를 섞는 방법을 정의한다. SrcAlpha는 현재 Pixel의 Alpha 값을 OneMinus를 한다는 것이다.
         ZWrite Off                      // Rendering 시 Z-Buffer에 Depth 정보를 기록하지 않는다.
         Cull Off                        // Polygon의 뒷면을 그리지 않는 Culling을 끈다.
+        
 
+        // Sprite Normal Pass
         Pass    // Rendering Pass를 정의한다.
         {
             CGPROGRAM 
@@ -27,10 +34,16 @@ Shader "Bubble/Sprite Normal"
             #include "UnityCG.cginc"    // Unity에서 제공하는 기본 함수와 변수 모음
             #include "Lighting.cginc"   // Unity에서 제공하는 Light 관련 함수와 변수 모음
 
+            #pragma shader_feature _IS_ENABLE_OUTLINE 
+            float _OutlineAnimationSpeed;           // Animation Speed
+            float4 _OutlineColor;                   // Outline Color
+            float _OutlineMode;
+
             #pragma vertex vert         // vert라는 이름의 함수를 Vertex Shader 사용
             #pragma fragment frag       // frag라는 이름의 함수를 Fragment Shader 사용
 
             sampler2D _MainTex;         // Properties에 Sampling하기 위한 변수
+            float4 _MainTex_TexelSize;
             float4 _MainTex_ST;         // Offset, Scale 정보를 담고 있는 변수
 
             sampler2D _NormalMap;       // Normal Texture를 Sampling하기 위한 변수
@@ -75,6 +88,16 @@ Shader "Bubble/Sprite Normal"
                 o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;    // Local Space의 Vertex Position -> World Position
                 return o;
             }
+            
+			float2 uvPerWorldUnit(float2 uv, float2 space) {
+				float2 uvPerPixelX = abs(ddx(uv));
+				float2 uvPerPixelY = abs(ddy(uv));
+				float unitsPerPixelX = length(ddx(space));
+				float unitsPerPixelY = length(ddy(space));
+				float2 uvPerUnitX = uvPerPixelX / unitsPerPixelX;
+				float2 uvPerUnitY = uvPerPixelY / unitsPerPixelY;
+				return (uvPerUnitX + uvPerUnitY);
+			}
 
             fixed4 frag (v2f i) : SV_Target                                 // Fragment Shader 함수 i는 Vertex Shader에서 Interpolate된 Data를 받는다.
             {
@@ -101,6 +124,31 @@ Shader "Bubble/Sprite Normal"
 
                 finalColor.rgb *= (lightContribution + lightContribution2); 
                 finalColor.a = i.color.a * _Color.a * mainTexColor.a;
+                
+                // Pass 1 outline
+
+                if(_OutlineMode == 1.0f)
+                {
+                    #define DIV_SQRT_2 0.70710678118
+				    float2 directions[8] = {float2(1, 0), float2(0, 1), float2(-1, 0), float2(0, -1),
+				    float2(DIV_SQRT_2, DIV_SQRT_2), float2(-DIV_SQRT_2, DIV_SQRT_2),
+				    float2(-DIV_SQRT_2, -DIV_SQRT_2), float2(DIV_SQRT_2, -DIV_SQRT_2)};
+                    
+                    float sinValue = sin(_Time.y * _OutlineAnimationSpeed * 10);
+                    float animatedWidth = 0 + (sinValue + 1.0) * 0.5 * (10 - 0);
+                    
+				    float2 sampleDistance = _MainTex_TexelSize.xy * animatedWidth;
+				    //float2 sampleDistance = uvPerWorldUnit(i.uv, i.worldPos.xy) * _MainTex_TexelSize.xy * _OutlineWidth;
+                    float maxAlpha = 0;
+				    for(uint index = 0; index<8; index++){
+					    float2 sampleUV = i.uv + directions[index] * sampleDistance;
+					    maxAlpha = max(maxAlpha, tex2D(_MainTex, sampleUV).a);
+				    }
+
+				    //apply border
+				    finalColor.rgb = lerp(_OutlineColor.rgb, finalColor.rgb, finalColor.a);
+				    finalColor.a = max(finalColor.a, maxAlpha);
+                }
 
                 return finalColor;
             }

@@ -5,14 +5,14 @@ public class Factory
     private ObjectPool objectPools;
 
     #region Factory Construct
-    public Factory(ElementCategory _category, GameObject parent = null)
+    public Factory(ElementCategory _category, MaterialManager material, GameObject parent = null)
     {
-        objectPools = new ObjectPool(_category, parent);
+        objectPools = new ObjectPool(_category, material, parent);
     }
 
-    public Factory(ElementCategory _category, int poolInitSize, GameObject parent = null )
+    public Factory(ElementCategory _category, MaterialManager material, int poolInitSize, GameObject parent = null )
     {
-        objectPools = new ObjectPool(_category, poolInitSize, parent);
+        objectPools = new ObjectPool(_category, material, poolInitSize, parent);
     }
     #endregion
 

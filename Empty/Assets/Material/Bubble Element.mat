@@ -7,10 +7,12 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Bubble
-  m_Shader: {fileID: 4800000, guid: 61751bc77ef1e604c8953dc3865420e1, type: 3}
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
+  m_Name: Bubble Element
+  m_Shader: {fileID: 4800000, guid: 1845e4e7313e7ae40ae074f6d1b40209, type: 3}
+  m_ValidKeywords:
+  - _IS_ENABLE_OUTLINE
+  m_InvalidKeywords:
+  - IsEnableOutline
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -20,10 +22,6 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _AddTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - _BumpMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -48,24 +46,12 @@ Material:
         m_Texture: {fileID: 2800000, guid: 1f58f938b731abc49954d61717132cd6, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _MainTexName:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _Normal:
-        m_Texture: {fileID: 2800000, guid: 1b960f8c7b8aa634cbe15ffded22a445, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - _NormalMap:
         m_Texture: {fileID: 2800000, guid: 1b960f8c7b8aa634cbe15ffded22a445, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _NormalTex:
-        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
@@ -82,30 +68,24 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _FresnelExponent: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _LightIntensity: 0.97
+    - _LightIntensity: 2
     - _Metallic: 0
     - _Mode: 0
-    - _NormalStrength: 1.4
+    - _NormalStrength: 2
     - _OcclusionStrength: 1
+    - _OutlineAnimationSpeed: 10
+    - _OutlineWidth: 0
     - _Parallax: 0.02
-    - _RimLightIntensity: 4.62
-    - _RimPower: 0.1
-    - _RimThreshold: 0.95
-    - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _AddTexScale: {r: 1, g: 1, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _Emission: {r: 0, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _FresnelColor: {r: 1, g: 1, b: 1, a: 1}
-    - _RimColor: {r: 1, g: 1, b: 1, a: 1}
+    - _OutlineColor: {r: 0, g: 1, b: 0, a: 1}
   m_BuildTextureStacks: []

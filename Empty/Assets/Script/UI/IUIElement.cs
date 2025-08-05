@@ -7,4 +7,5 @@ public interface IUIElement
     public void SetElementInfo(ElementInfo info);
     public RectTransform GetRectTransform();
     public GameObject GetGameObject();
+    public Material GetMaterial();
 }

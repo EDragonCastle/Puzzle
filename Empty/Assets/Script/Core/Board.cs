@@ -166,13 +166,21 @@ public class Board : MonoBehaviour, IChannel
         if (isProcessing)
             return;
 
+        var materialManager = Locator<MaterialManager>.Get();
+
         // 어떤 object를 선택했어.
         if (swapObject == null)
         {
+            // 여기가 선택 했을 때
             swapObject = _selectObject;
+            materialManager.IsEnableOutline(swapObject.GetGameObject(), true);
         }
         else
         {
+            // 여기가 선택 하지 않았을 때, 바꿀 때
+            materialManager.IsEnableOutline(swapObject.GetGameObject(), false);
+
+            // 범위 내에 있으면 swap
             if (IsExistRangeElement(_selectObject))
                 StartCoroutine(SwapElement(swapObject, _selectObject, false));
             else

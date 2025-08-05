@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ElementCategory : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class ElementCategory : MonoBehaviour
     private GameObject greenElement;
     [SerializeField]
     private GameObject yellowElement;
+
 
     public GameObject GetCategory(ElementColor _category)
     {

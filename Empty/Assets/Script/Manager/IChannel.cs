@@ -3,6 +3,7 @@
     Select,
     Score,
     ResetScore,
+    LightInfo,
     End,
 }
 

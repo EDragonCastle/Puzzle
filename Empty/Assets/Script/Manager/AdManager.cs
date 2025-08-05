@@ -394,10 +394,7 @@ public class AdManager : MonoBehaviour
                 }
                 Debug.Log($"Reward ad load with reponse : {ad.GetResponseInfo()}");
 
-                // 1. 이러식으로 그냥 설정
-                //rewardedAd = ad;
-
-                // 2. 서버 측 확인 후 SSV Callback 검사
+                // 서버 측 확인 후 SSV Callback 검사
                 // UserId는 진짜 UserId를 넣고, CustomData에는 광고를 다 본 UserId를 넣는다.
                 var options = new ServerSideVerificationOptions()
                 {
