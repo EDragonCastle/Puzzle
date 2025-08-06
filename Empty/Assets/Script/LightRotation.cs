@@ -16,8 +16,21 @@ public class LightRotation : MonoBehaviour
     {
         if(previousRotation != this.transform.rotation)
         {
-            Debug.Log("Rotation is Change.");
+            var eventManager = Locator<EventManager>.Get();
+            var lightInfo = new LightInfo()
+            {
+                color = light.color,
+                direction = -light.transform.forward
+            };
+            
             previousRotation = this.transform.rotation;
+            eventManager.Notify(ChannelInfo.LightInfo, lightInfo);
         }
     }
+}
+
+public struct LightInfo
+{
+    public Vector4 color;
+    public Vector4 direction;
 }

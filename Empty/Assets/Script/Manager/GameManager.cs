@@ -16,9 +16,12 @@ public class GameManager : MonoBehaviour
     private async void Awake()
     {
         // Manager constuctor
-        MaterialManager materialManager = new MaterialManager();
-        Factory factory = new Factory(elementCategory, materialManager, objectPoolDummy);
         EventManager eventManager = new EventManager();
+        MaterialManager materialManager = new MaterialManager();
+        Locator<MaterialManager>.Provide(materialManager);
+        Locator<EventManager>.Provide(eventManager);
+
+        Factory factory = new Factory(elementCategory, materialManager, objectPoolDummy);
         UIManager uiManager = new UIManager(uiPrefabCategory);
         CameraManager cameraManager = new CameraManager(cameraCategory);
 
@@ -26,12 +29,11 @@ public class GameManager : MonoBehaviour
         await server.InitalizeFirebase();
 
         // Provide Locator
+   
         Locator<Factory>.Provide(factory);
-        Locator<EventManager>.Provide(eventManager);
         Locator<CameraManager>.Provide(cameraManager);
         Locator<UIManager>.Provide(uiManager);
         Locator<EDCServer>.Provide(server);
-        Locator<MaterialManager>.Provide(materialManager);
     }
 
     private void Start()

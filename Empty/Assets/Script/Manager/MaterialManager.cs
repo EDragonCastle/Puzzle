@@ -24,7 +24,7 @@ public class MaterialManager
         }
     }
 
-    // set shader setting
+    // Enable Outline Object
     public void IsEnableOutline(GameObject targetObject, bool isEnable)
     {
         var renderer = targetObject.GetComponent<Image>();
@@ -34,12 +34,26 @@ public class MaterialManager
             Debug.LogError("Material not exist");
             return;
         }
-        
 
         if(isEnable)
             renderer.material.SetFloat(BubblePropertyToString(BubbleProperty.EnableOutline), 1.0f);
         else
             renderer.material.SetFloat(BubblePropertyToString(BubbleProperty.EnableOutline), 0.0f);
+    }
+
+    // Change Direction Light Information
+    public void ChangeCustomDirectionLightInfo(GameObject targetObject, LightInfo lightInfo)
+    {
+        var renderer = targetObject.GetComponent<Image>();
+
+        if (renderer == null)
+        {
+            Debug.LogError("Material not exist");
+            return;
+        }
+
+        renderer.material.SetVector("_CustomDirectionLightDirection", lightInfo.direction);
+        renderer.material.SetVector("_CustomDirectionLightColor", lightInfo.color);
     }
 
     private Color ElementColorToColor(ElementColor _color)

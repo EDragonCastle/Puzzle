@@ -15,6 +15,7 @@ Shader "Bubble/Bubble Element"
         _OutlineColor ("Sprite Outline Color", Color) = (1,1,1,1)
         _OutlineAnimationSpeed ("Outline Speed", Range(0.1, 10)) = 1
         _OutlineMode ("Outline Mode", float) = 0.0
+
     }
     
     SubShader   // 여러 개의 Rendering 방법을 정의할 수 있다. 여기서는 하나의 SubShader만 사용한다.
@@ -37,7 +38,10 @@ Shader "Bubble/Bubble Element"
             #pragma shader_feature _IS_ENABLE_OUTLINE 
             float _OutlineAnimationSpeed;           // Animation Speed
             float4 _OutlineColor;                   // Outline Color
-            float _OutlineMode;
+            float _OutlineMode;                     // Outline Mode on off
+
+            float4 _CustomDirectionLightDirection;  // Custom Direction Light 방향
+            float4 _CustomDirectionLightColor;      // Custom Direction Light Color
 
             #pragma vertex vert         // vert라는 이름의 함수를 Vertex Shader 사용
             #pragma fragment frag       // frag라는 이름의 함수를 Fragment Shader 사용
@@ -116,11 +120,13 @@ Shader "Bubble/Bubble Element"
                     i.worldNormal * tangentSpaceNormal.z
                 );                                                          // Tangent Normal의 NormalVector를 World Space로 변환한다. Tangent, BiNormal, Normal을 이용해 Rotation Matrix를 만든다.
 
-                float3 lightDir = normalize(_WorldSpaceLightPos0.xyz);          // Unity의 Direction의 방향을 가져와 Normalize를 한다.
+                //float3 lightDir = normalize(_WorldSpaceLightPos0.xyz);          // Unity의 Direction의 방향을 가져와 Normalize를 한다.
+                float3 lightDir = normalize(_CustomDirectionLightDirection.xyz);          // Unity의 Direction의 방향을 가져와 Normalize를 한다.
                 float diffuse = saturate(dot(worldNormalFromMap, lightDir));    // World Space Normal Vector와 Light Direction Vector를 내적해서 난반사 조명 값을 구한다. saturate를 이용해서 음수가 나오지 않게 한다.
 
                 float3 lightContribution = _LightIntensity;                                 // 빛의 전체적인 강도를 나타낸다.
-                float3 lightContribution2 = _LightIntensity * _LightColor0.rgb * diffuse;   // Diffuse와 Direction Light를 곱한다.
+                //float3 lightContribution2 = _LightIntensity * _LightColor0.rgb * diffuse;   // Diffuse와 Direction Light를 곱한다.
+                float3 lightContribution2 = _LightIntensity * _CustomDirectionLightColor.rgb * diffuse;   // Diffuse와 Direction Light를 곱한다.
 
                 finalColor.rgb *= (lightContribution + lightContribution2); 
                 finalColor.a = i.color.a * _Color.a * mainTexColor.a;

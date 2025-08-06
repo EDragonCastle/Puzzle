@@ -9,34 +9,31 @@ public class Element : MonoBehaviour, IPointerDownHandler, IUIElement, IChannel
     [SerializeField]
     private ElementInfo elementInfo;
     private RectTransform rectTransform;
-    private Material material;
-    private EventManager eventManager;
-    private MaterialManager materialManager;
 
     #region IUIElement Interface Methord
     public ElementInfo GetElementInfo() => elementInfo;
     public void SetElementInfo(ElementInfo info) => elementInfo = info;
     public RectTransform GetRectTransform() => rectTransform;
-    public GameObject GetGameObject() => this.gameObject;
-    public Material GetMaterial() => this.material;
+    public GameObject GetGameObject() => this.gameObject; 
     #endregion
 
     public void Awake()
     {
         rectTransform = this.GetComponent<RectTransform>();
-        eventManager = Locator<EventManager>.Get();
-        material = this.GetComponent<Image>().material;
-        materialManager = Locator<MaterialManager>.Get();
     }
 
     private void OnEnable()
     {
-        //eventManager.Subscription(ChannelInfo.LightInfo, HandleEvent);
+        var eventManager = Locator<EventManager>.Get();
+        var materialManager = Locator<MaterialManager>.Get();
+        materialManager.ChangeCustomDirectionLightInfo(this.gameObject, new LightInfo() { color = Vector4.one, direction = Vector4.zero });
+        eventManager.Subscription(ChannelInfo.LightInfo, HandleEvent);
     }
 
     private void OnDisable()
     {
-        //eventManager.Unsubscription(ChannelInfo.LightInfo, HandleEvent);
+        var eventManager = Locator<EventManager>.Get();
+        eventManager.Unsubscription(ChannelInfo.LightInfo, HandleEvent);
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -51,9 +48,16 @@ public class Element : MonoBehaviour, IPointerDownHandler, IUIElement, IChannel
         switch(channel)
         {
             case ChannelInfo.LightInfo:
-                
+                if(information is LightInfo lightInfo)
+                    ChangeLightMaterial(lightInfo);
                 break;
         }
+    }
+
+    private void ChangeLightMaterial(LightInfo lightInfo)
+    {
+        var materialManager = Locator<MaterialManager>.Get();
+        materialManager.ChangeCustomDirectionLightInfo(this.gameObject, lightInfo);
     }
 }
 
