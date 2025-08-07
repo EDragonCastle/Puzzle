@@ -52,6 +52,7 @@ public class Element : MonoBehaviour, IPointerDownHandler, IUIElement, IChannel
                     ChangeLightMaterial(lightInfo);
                 break;
         }
+        
     }
 
     private void ChangeLightMaterial(LightInfo lightInfo)
