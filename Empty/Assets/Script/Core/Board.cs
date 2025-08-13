@@ -200,6 +200,7 @@ public class Board : MonoBehaviour, IChannel
     private IEnumerator SwapElement(IUIElement _swapObject, IUIElement changeObject, bool isReturn)
     {
         isProcessing = true;
+        Debug.Log($"Swap {isProcessing}");
 
         var originObjectElementInfo = _swapObject.GetElementInfo();
         var changeObjectElementInfo = changeObject.GetElementInfo();
@@ -259,6 +260,7 @@ public class Board : MonoBehaviour, IChannel
                 }
             }
             tourIndex.Clear();
+            // Match 성공 실패
             if (removeIndex.Count > 0)
             {
                 StartCoroutine(DestoryElement());
@@ -277,6 +279,7 @@ public class Board : MonoBehaviour, IChannel
     {
         swapCount++;
         life.DestoryLife(swapCount);
+        eventManager.Notify(ChannelInfo.MatchFail);
 
         if (!life.DestoryLife(swapCount))
         {
@@ -429,12 +432,11 @@ public class Board : MonoBehaviour, IChannel
 
         removeIndex.Clear();
         CheckBoard();
-        isProcessing = false;
     }
 
     private IEnumerator AnimateMovement(List<(Vector2 start, Vector2 end, RectTransform target)> moveList)
     {
-        Debug.Log("Animation Movement");
+        //Debug.Log("Animation Movement");
         float elapsed = 0f;
 
         while (elapsed < duration)
@@ -519,8 +521,9 @@ public class Board : MonoBehaviour, IChannel
     #region Destory 
     private IEnumerator DestoryElement()
     {
+        isProcessing = true;
         eventManager.Notify(ChannelInfo.Score, removeIndex.Count);
-        
+        eventManager.Notify(ChannelInfo.MatchSuccess);
         // Destory
         foreach (var remove in removeIndex)
         {
@@ -550,6 +553,8 @@ public class Board : MonoBehaviour, IChannel
 
         if (removeIndex.Count > 0)
             StartCoroutine(DestoryElement());
+        else
+            isProcessing = false;
     }
     #endregion
 
@@ -635,7 +640,6 @@ public class Board : MonoBehaviour, IChannel
 
         removeIndex.Clear();
         InitCheckBoard();
-        isProcessing = false;
     }
 
     private void DFS(int x, int y, int _color, Direction _direction, int count)

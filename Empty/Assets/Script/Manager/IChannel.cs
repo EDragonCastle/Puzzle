@@ -4,6 +4,8 @@
     Score,
     ResetScore,
     LightInfo,
+    MatchSuccess,
+    MatchFail,
     End,
 }
 

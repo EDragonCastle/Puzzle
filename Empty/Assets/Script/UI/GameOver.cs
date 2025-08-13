@@ -37,7 +37,7 @@ public class GameOver : MonoBehaviour
     public void Rank()
     {
         title.SetActive(false);
-        gameOver.SetActive(true);
+        gameOver.SetActive(false);
         board.SetActive(false);
         ranking.SetActive(true);
     }

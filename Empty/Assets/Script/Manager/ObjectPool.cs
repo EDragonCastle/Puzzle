@@ -70,7 +70,7 @@ public class ObjectPool
         }
         else
         {
-            Debug.Log("Additional Object");
+            //Debug.Log("Additional Object");
             getObject = GameObject.Instantiate(prefabs);
             materialManager.CreateMaterial(getObject, _color);
         }
