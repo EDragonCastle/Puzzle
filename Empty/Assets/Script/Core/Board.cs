@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using Unity.Jobs;
 
 public enum Direction
 {
@@ -200,7 +201,6 @@ public class Board : MonoBehaviour, IChannel
     private IEnumerator SwapElement(IUIElement _swapObject, IUIElement changeObject, bool isReturn)
     {
         isProcessing = true;
-        Debug.Log($"Swap {isProcessing}");
 
         var originObjectElementInfo = _swapObject.GetElementInfo();
         var changeObjectElementInfo = changeObject.GetElementInfo();
@@ -277,9 +277,12 @@ public class Board : MonoBehaviour, IChannel
 
     private void FailSwap()
     {
+        // 이 곳에서 Job System을 사용하는 거야.
+        var matchFailJob = new MatchFailJob();
+        JobHandle jobHandle = matchFailJob.Schedule();
+
         swapCount++;
         life.DestoryLife(swapCount);
-        eventManager.Notify(ChannelInfo.MatchFail);
 
         if (!life.DestoryLife(swapCount))
         {
@@ -296,6 +299,8 @@ public class Board : MonoBehaviour, IChannel
             var uiBoard = uiManager.GetUIPrefabObject(UIPrefab.Board);
             uiBoard.SetActive(false);
         }
+
+        jobHandle.Complete();
     }
 
     // 전방향을 확인해야 한다.
@@ -436,7 +441,6 @@ public class Board : MonoBehaviour, IChannel
 
     private IEnumerator AnimateMovement(List<(Vector2 start, Vector2 end, RectTransform target)> moveList)
     {
-        //Debug.Log("Animation Movement");
         float elapsed = 0f;
 
         while (elapsed < duration)
@@ -521,9 +525,15 @@ public class Board : MonoBehaviour, IChannel
     #region Destory 
     private IEnumerator DestoryElement()
     {
+        // 여기서 Job System 사용
+        var matchSuccessJob = new MatchSuccessJob();
+
+        JobHandle jobHandle = matchSuccessJob.Schedule();
+
         isProcessing = true;
         eventManager.Notify(ChannelInfo.Score, removeIndex.Count);
-        eventManager.Notify(ChannelInfo.MatchSuccess);
+        
+
         // Destory
         foreach (var remove in removeIndex)
         {
@@ -535,6 +545,8 @@ public class Board : MonoBehaviour, IChannel
         }
 
         yield return new WaitForSeconds(duration);
+        jobHandle.Complete();
+
         StartCoroutine(AnimationReFill());
     }
     #endregion

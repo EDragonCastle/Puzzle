@@ -301,7 +301,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2496878116274349860
 RectTransform:
   m_ObjectHideFlags: 0
@@ -459,6 +459,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2496878116274349860}
     m_Modifications:
+    - target: {fileID: 5673185718181969541, guid: 715588f58f7398f438042e098cad3f82, type: 3}
+      propertyPath: startingAnimation
+      value: rain
+      objectReference: {fileID: 0}
     - target: {fileID: 5881112597752377896, guid: 715588f58f7398f438042e098cad3f82, type: 3}
       propertyPath: m_Pivot.x
       value: 0.45634925
@@ -561,6 +565,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2496878116274349860}
     m_Modifications:
+    - target: {fileID: 2099741957916709414, guid: 87bfbe866c5efc4468757e6ea3158a56, type: 3}
+      propertyPath: startingAnimation
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 4253256643890978628, guid: 87bfbe866c5efc4468757e6ea3158a56, type: 3}
       propertyPath: m_Name
       value: SkeletonGraphic (celestial-circus-pro)
@@ -670,6 +678,10 @@ PrefabInstance:
     - target: {fileID: 5673185718181969541, guid: 715588f58f7398f438042e098cad3f82, type: 3}
       propertyPath: initialFlipY
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5673185718181969541, guid: 715588f58f7398f438042e098cad3f82, type: 3}
+      propertyPath: startingAnimation
+      value: rain
       objectReference: {fileID: 0}
     - target: {fileID: 5881112597752377896, guid: 715588f58f7398f438042e098cad3f82, type: 3}
       propertyPath: m_Pivot.x
