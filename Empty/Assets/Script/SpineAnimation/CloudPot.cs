@@ -47,7 +47,7 @@ public class CloudPot : MonoBehaviour, IChannel
         }
     }
 
-    // 이러니까 너무 별로여서 성공할때만 Add를 하고 실패하면 Set을 하자.
+    // Match 성공할때만 Add를 하고 실패하면 Set을 하자.
     private void OnPlayingAnimationEnd(CloudAnimation animationName)
     {
         var trackEntry = AddAnimation(0, animationName, false, 0);
