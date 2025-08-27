@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using Unity.Jobs;
+using UnityEngine.AddressableAssets;
+
 
 public enum Direction
 {
@@ -106,10 +108,19 @@ public class Board : MonoBehaviour, IChannel
         lifes = new GameObject[maxLife];
         var lifePrefab = uiManager.GetUIPrefab(UIPrefab.Life);
         
+        // 여기서 Address Instanitate 해야한다.
+
         for(int i = 0; i < maxLife; i++)
         {
-            lifes[i] = GameObject.Instantiate(lifePrefab);
+            var lifeObject = CreateLifeObject(lifePrefab);
+            lifes[i] = lifeObject;
         }
+    }
+
+    private GameObject CreateLifeObject(AssetReferenceGameObject originPrefab)
+    {
+        var newObject = Addressables.InstantiateAsync(originPrefab).WaitForCompletion();
+        return newObject;
     }
 
     private void Enable()

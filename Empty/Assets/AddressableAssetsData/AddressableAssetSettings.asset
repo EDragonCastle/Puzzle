@@ -43,6 +43,7 @@ MonoBehaviour:
   m_GroupAssets:
   - {fileID: 11400000, guid: 65f4c8296ec06734887a1b866b562ddd, type: 2}
   - {fileID: 11400000, guid: 185ce152bb47fec46b280d1a852ccfe9, type: 2}
+  - {fileID: 11400000, guid: 44d1e571b185f084ca8c191aa038c0b7, type: 2}
   m_BuildSettings:
     m_CompileScriptsInVirtualMode: 0
     m_CleanupStreamingAssetsAfterBuilds: 1
@@ -84,6 +85,11 @@ MonoBehaviour:
   m_LabelTable:
     m_LabelNames:
     - default
+    - Material
+    - Animation
+    - UI
+    - BGM
+    - SFX
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
   - {fileID: 11400000, guid: 22d36ea8b884c8f488b8a3560e730767, type: 2}

@@ -1,23 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 public class UIPrefabCategory : MonoBehaviour
 {
     [SerializeField]
-    private GameObject gameOver;
+    private AssetReferenceGameObject gameOver;
     [SerializeField]
-    private GameObject title;
+    private AssetReferenceGameObject title;
     [SerializeField]
-    private GameObject board;
+    private AssetReferenceGameObject board;
     [SerializeField]
-    private GameObject life;
+    private AssetReferenceGameObject life;
     [SerializeField]
-    private GameObject rank;
+    private AssetReferenceGameObject rank;
 
-    public GameObject GetUIPrefab(UIPrefab prefabType)
+    public AssetReferenceGameObject GetUIPrefab(UIPrefab prefabType)
     {
-        GameObject prefab = null;
+        AssetReferenceGameObject prefab = null;
         switch(prefabType)
         {
             case UIPrefab.Title:

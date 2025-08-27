@@ -1,21 +1,23 @@
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.UI;
 
 public class ElementCategory : MonoBehaviour
 {
+    #region Addressable Object
     [SerializeField]
-    private GameObject redElement;
+    private AssetReferenceGameObject redElement;
     [SerializeField]
-    private GameObject blueElement;
+    private AssetReferenceGameObject blueElement;
     [SerializeField]
-    private GameObject greenElement;
+    private AssetReferenceGameObject greenElement;
     [SerializeField]
-    private GameObject yellowElement;
+    private AssetReferenceGameObject yellowElement;
+    #endregion
 
-
-    public GameObject GetCategory(ElementColor _category)
+    public AssetReferenceGameObject GetCategory(ElementColor _category)
     {
-        GameObject categoryObject = null;
+        AssetReferenceGameObject categoryObject = null;
         switch (_category)
         {
             case ElementColor.Red:

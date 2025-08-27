@@ -1,22 +1,28 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.UI;
+using System.Threading.Tasks;
 
 public class ObjectPool
 {
     private readonly ElementCategory category;
     private readonly int initalizeLength;
-    private Dictionary<GameObject, Stack<GameObject>> pools;
+    // Resource, Object
+    private Dictionary<AssetReferenceGameObject, Stack<GameObject>> pools;
 
     private GameObject saveObjectPools;
     private MaterialManager materialManager;
 
-    #region Object Pool Construct
+    private TaskCompletionSource<bool> initializeCompleteSource;
+    private Task initalizeTask => initializeCompleteSource.Task;
+
+    #region AddressObject Object Pool Consgtrcut
     public ObjectPool(ElementCategory _category, MaterialManager _materialManager, GameObject parent = null)
     {
         category = _category;
         initalizeLength = 20;
-        pools = new Dictionary<GameObject, Stack<GameObject>>();
+        pools = new Dictionary<AssetReferenceGameObject, Stack<GameObject>>();
         saveObjectPools = parent;
         materialManager = _materialManager;
         Initialize();
@@ -26,33 +32,44 @@ public class ObjectPool
     {
         category = _category;
         initalizeLength = length;
-        pools = new Dictionary<GameObject, Stack<GameObject>>();
+        pools = new Dictionary<AssetReferenceGameObject, Stack<GameObject>>();
         saveObjectPools = parent;
         materialManager = _materialManager;
         Initialize();
     }
     #endregion
 
-    private void Initialize()
+    #region AddressObject
+    private async void Initialize()
     {
-        for(int j = 0; j < (int)ElementColor.End; j++)
+        initializeCompleteSource = new TaskCompletionSource<bool>();
+
+        for (int j = 0; j < (int)ElementColor.End; j++)
         {
             var originePrefab = category.GetCategory((ElementColor)j);
             var prefabList = new Stack<GameObject>();
             for (int i = 0; i < initalizeLength; i++)
             {
                 // 위에 prefab을 받아와서 instantiate로 생성
-                var copyGameObject = GameObject.Instantiate(originePrefab);
-                materialManager.CreateMaterial(copyGameObject, (ElementColor)j);
-                copyGameObject.SetActive(false);
-                
-                if (saveObjectPools != null)
-                    copyGameObject.transform.SetParent(saveObjectPools.transform);
+                GameObject copyGameObject = null;
 
-                prefabList.Push(copyGameObject);
+                if (saveObjectPools != null)
+                {
+                    var handle = Addressables.InstantiateAsync(originePrefab, saveObjectPools.transform);
+                    copyGameObject = await handle.Task;
+
+                    if(copyGameObject != null)
+                    {
+                        materialManager.CreateMaterial(copyGameObject, (ElementColor)j);
+                        copyGameObject.SetActive(false);
+                        prefabList.Push(copyGameObject);
+                    }
+                }
             }
             pools.Add(originePrefab, prefabList);
         }
+
+        initializeCompleteSource.TrySetResult(true);
     }
 
     public GameObject Get(ElementColor _color)
@@ -61,7 +78,7 @@ public class ObjectPool
         var stackObjects = pools[prefabs];
 
         GameObject getObject = null;
-        if(stackObjects.Count > 0)
+        if (stackObjects.Count > 0)
         {
             getObject = stackObjects.Peek();
             getObject.SetActive(true);
@@ -70,11 +87,14 @@ public class ObjectPool
         }
         else
         {
-            //Debug.Log("Additional Object");
-            getObject = GameObject.Instantiate(prefabs);
-            materialManager.CreateMaterial(getObject, _color);
+            return NewObject(prefabs, _color);
         }
+    }
 
+    private GameObject NewObject(AssetReferenceGameObject prefabs, ElementColor _color)
+    {
+        var getObject = Addressables.InstantiateAsync(prefabs, saveObjectPools.transform).WaitForCompletion();
+        materialManager.CreateMaterial(getObject, _color);
         return getObject;
     }
 
@@ -99,4 +119,7 @@ public class ObjectPool
             Debug.Log($"{destoryObject} is not Exist IUIElement Component");
         }
     }
+    #endregion
+
+
 }

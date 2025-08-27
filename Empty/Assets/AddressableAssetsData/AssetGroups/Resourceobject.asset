@@ -1,0 +1,110 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Resourceobject
+  m_EditorClassIdentifier: 
+  m_GroupName: Resourceobject
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 56c746230c1345d4a8a5317ada443850
+  m_SerializeEntries:
+  - m_GUID: eedd49d8734447849ad58027e5036c2a
+    m_Address: SkeletonGraphic (celestial-circus-pro)
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Animation
+  - m_GUID: 97af9c5cc30bbbf4693d8b03a8badf9d
+    m_Address: SkeletonGraphic (cloud-pot)
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Animation
+  - m_GUID: 8183478b942ba564dac0f00f626cc644
+    m_Address: Blue Element
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  - m_GUID: d75b1ed27cdfa1d4a8cd3dd5b9cef020
+    m_Address: Green Element
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  - m_GUID: c6398b1809ec6a94fa4269b00925454a
+    m_Address: Yellow Element
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  - m_GUID: 2695ab253d2457f42bdacce17dcda57a
+    m_Address: Red Element
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  - m_GUID: 5a0002daa73a73e4db84f44626d4c126
+    m_Address: Stage1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Sound
+    - BGM
+  - m_GUID: 69acdf8c7c0a7bb48b96fdf3780c4a56
+    m_Address: None Swap
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Sound
+    - SFX
+  - m_GUID: 75747e650b41b4d42bdad830be4e62b3
+    m_Address: Pop
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Sound
+    - SFX
+  - m_GUID: ad1ce3a765b02f741ac7746fff2fdd74
+    m_Address: Pop2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Sound
+    - SFX
+  - m_GUID: 22fff326f3d6e1b449a52d2772a2dacb
+    m_Address: Pop3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Sound
+    - SFX
+  - m_GUID: 6703675bd9f40d64ab560b9a1e4beb74
+    m_Address: Game Board
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+  - m_GUID: 3970b78616449e34f81c609d6eb0fede
+    m_Address: Game Over
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+  - m_GUID: 5619afcfbac7fcf43a9f195c2067713d
+    m_Address: Life
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+  - m_GUID: 620b57975a3451945b09b269a6259bb4
+    m_Address: Ranker
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+  - m_GUID: 32bfcb492ff31d84e94ac1a595e63d97
+    m_Address: Title
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 9078c5a3f5e2b0a43917736846b2898e, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 83d3b53df1d98d4489419cc7f9fb0c34, type: 2}
+    - {fileID: 11400000, guid: 1b74295655007334d9ee4e1230678bc7, type: 2}

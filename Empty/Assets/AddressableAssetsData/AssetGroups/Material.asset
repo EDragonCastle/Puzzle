@@ -10,21 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
-  m_Name: Default Local Group
+  m_Name: Material
   m_EditorClassIdentifier: 
-  m_GroupName: Default Local Group
+  m_GroupName: Material
   m_Data:
     m_SerializedData: []
-  m_GUID: 56c746230c1345d4a8a5317ada443850
+  m_GUID: 472ba38e4b283e04d80e03c4a0f75c03
   m_SerializeEntries:
-  - m_GUID: 87bfbe866c5efc4468757e6ea3158a56
-    m_Address: Assets/Prefab/Character/SkeletonGraphic (celestial-circus-pro).prefab
+  - m_GUID: 6cffee2141cc1964c8c5fbdb1ac9a071
+    m_Address: Bubble Element
     m_ReadOnly: 0
     m_SerializedLabels:
-    - default
+    - Material
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 9078c5a3f5e2b0a43917736846b2898e, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: 83d3b53df1d98d4489419cc7f9fb0c34, type: 2}
-    - {fileID: 11400000, guid: 1b74295655007334d9ee4e1230678bc7, type: 2}
+    - {fileID: 11400000, guid: 761d710f27258154f8d293b09c28df18, type: 2}
+    - {fileID: 11400000, guid: 0aef34ad76a424845ba90e7e962cfb3c, type: 2}
