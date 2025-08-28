@@ -23,6 +23,8 @@ public class SoundCategory : MonoBehaviour
 
         var handle2 = Addressables.LoadAssetsAsync<GameObject>("SFX", null);
         handle2.Completed += (ophandle) => OnAssetsLoaded(ophandle, "SFX");
+
+        var handle3 = Addressables.LoadAssetAsync<GameObject>("SFX");
     }
 
     // Prefab 형식만 주면 된다.
