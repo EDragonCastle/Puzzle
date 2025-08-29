@@ -1,4 +1,5 @@
 Resource Manager 설명
+
 Empty\Assets\Script\Manager\ResourceManager.cs 파일 참고
 ResourceManager를 생성하면 생성자에서 Load를 실행합니다.
 Load 부분에서는 ResourceType과 이름을 가지고 Addressable에서 해당 Resource를 메모리에 Load 합니다.
