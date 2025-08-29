@@ -2,22 +2,28 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.UI;
 
-public class ElementCategory : MonoBehaviour
+public class ElementCategory
 {
-    #region Addressable Object
-    [SerializeField]
-    private AssetReferenceGameObject redElement;
-    [SerializeField]
-    private AssetReferenceGameObject blueElement;
-    [SerializeField]
-    private AssetReferenceGameObject greenElement;
-    [SerializeField]
-    private AssetReferenceGameObject yellowElement;
+    #region Element Object
+    private GameObject redElement;
+    private GameObject blueElement;
+    private GameObject greenElement;
+    private GameObject yellowElement;
     #endregion
 
-    public AssetReferenceGameObject GetCategory(ElementColor _category)
+    // Resource Manager에서 Load가 완료되었다.
+    // 이제 받아와서 사용하면 된다. 어떻게 받아야 할까? 지금은 4가지 색상 밖에 없으니 Object 4개를 넣어두는게 좋을 것 같다.
+    public ElementCategory(GameObject red, GameObject blue, GameObject green, GameObject yellow)
     {
-        AssetReferenceGameObject categoryObject = null;
+        redElement = red;
+        blueElement = blue;
+        greenElement = green;
+        yellowElement = yellow;
+    }
+
+    public GameObject GetCategory(ElementColor _category)
+    {
+        GameObject categoryObject = null;
         switch (_category)
         {
             case ElementColor.Red:

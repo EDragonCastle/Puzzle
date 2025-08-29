@@ -3,27 +3,38 @@ using UnityEngine;
 public class SoundManager 
 {
     private SoundCategory category;
+    private ObjectPool<SFX, SoundCategory> objectPools;
+    private GameObject uniqueBGMObject;
 
-    private GameObject uniqueBGMSound;
-
-    public SoundManager(SoundCategory _category)
+    public SoundManager(SoundCategory _category, GameObject parent = null)
     {
         category = _category;
+        objectPools = new ObjectPool<SFX, SoundCategory>(_category, parent);
     }
 
     public void PlayBGM(BGM bgm)
     {
-        if(uniqueBGMSound == null)
-            uniqueBGMSound = GameObject.Instantiate(category.GetSound(bgm));
+        if(uniqueBGMObject == null)
+            uniqueBGMObject = GameObject.Instantiate(category.GetSound(bgm));
+        else
+        {
+            DestoryBGM();
+            uniqueBGMObject = GameObject.Instantiate(category.GetSound(bgm));
+        }    
     }
 
     public void DestoryBGM()
     {
-        GameObject.Destroy(uniqueBGMSound);
+        GameObject.Destroy(uniqueBGMObject);
     }
 
     public void PlaySFX(SFX sfx)
     {
-        GameObject.Instantiate(category.GetSound(sfx));
+        objectPools.Get(sfx);
+    }
+
+    public void ReturnSFX(GameObject sfxObject)
+    {
+        objectPools.Return(sfxObject);
     }
 }

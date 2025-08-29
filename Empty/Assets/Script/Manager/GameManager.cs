@@ -1,12 +1,9 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 [DefaultExecutionOrder(-1)]
 public class GameManager : MonoBehaviour
 {
-    [SerializeField]
-    private ElementCategory elementCategory;
-    [SerializeField]
-    private UIPrefabCategory uiPrefabCategory;
     [SerializeField]
     private CameraCategory cameraCategory;
     [SerializeField]
@@ -21,8 +18,26 @@ public class GameManager : MonoBehaviour
         Locator<MaterialManager>.Provide(materialManager);
         Locator<EventManager>.Provide(eventManager);
 
-        Factory factory = new Factory(elementCategory, materialManager, objectPoolDummy);
+        ResourceManager resourceManager = new ResourceManager();
+        #region Sound Category Setting
+        var bgmList = new List<GameObject>();
+        var sfxList = new List<GameObject>();
+
+        bgmList.Add(resourceManager.GetResource(ResourceType.BGM, "Stage1"));
+
+        sfxList.Add(resourceManager.GetResource(ResourceType.SFX, "None Swap"));
+        sfxList.Add(resourceManager.GetResource(ResourceType.SFX, "Pop"));
+        sfxList.Add(resourceManager.GetResource(ResourceType.SFX, "Pop2"));
+        sfxList.Add(resourceManager.GetResource(ResourceType.SFX, "Pop3"));
+        #endregion
+        // Category Setting
+        SoundCategory soundCategory = new SoundCategory(bgmList, sfxList);
+        ElementCategory elementCategory = new ElementCategory(resourceManager.GetResource(ResourceType.Default, "Red Element"), resourceManager.GetResource(ResourceType.Default, "Blue Element"), resourceManager.GetResource(ResourceType.Default, "Green Element"), resourceManager.GetResource(ResourceType.Default, "Yellow Element"));
+        UIPrefabCategory uiPrefabCategory = new UIPrefabCategory(resourceManager.GetResource(ResourceType.UI, "Title"), resourceManager.GetResource(ResourceType.UI, "Game Board"), resourceManager.GetResource(ResourceType.UI, "Life"), resourceManager.GetResource(ResourceType.UI, "Ranker"), resourceManager.GetResource(ResourceType.UI, "Game Over"));
+
+        Factory factory = new Factory(elementCategory, objectPoolDummy);
         UIManager uiManager = new UIManager(uiPrefabCategory);
+        SoundManager soundManager = new SoundManager(soundCategory, objectPoolDummy);
         CameraManager cameraManager = new CameraManager(cameraCategory);
 
         EDCServer server = new EDCServer();
@@ -34,6 +49,7 @@ public class GameManager : MonoBehaviour
         Locator<CameraManager>.Provide(cameraManager);
         Locator<UIManager>.Provide(uiManager);
         Locator<EDCServer>.Provide(server);
+        Locator<SoundManager>.Provide(soundManager);
     }
 
     private void Start()
@@ -41,7 +57,8 @@ public class GameManager : MonoBehaviour
         var uiManager = Locator<UIManager>.Get();
         var title = uiManager.GetUIPrefabObject(UIPrefab.Title);
         title.SetActive(true);
+        var soundManager = Locator<SoundManager>.Get();
+        soundManager.PlayBGM(BGM.Title);
     }
-
 }
 

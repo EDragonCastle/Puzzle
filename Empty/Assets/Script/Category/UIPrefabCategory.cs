@@ -3,23 +3,31 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-public class UIPrefabCategory : MonoBehaviour
-{
-    [SerializeField]
-    private AssetReferenceGameObject gameOver;
-    [SerializeField]
-    private AssetReferenceGameObject title;
-    [SerializeField]
-    private AssetReferenceGameObject board;
-    [SerializeField]
-    private AssetReferenceGameObject life;
-    [SerializeField]
-    private AssetReferenceGameObject rank;
+public class UIPrefabCategory
+{ 
+    #region UIObject
+    private GameObject gameOver;
+    private GameObject title;
+    private GameObject board;
+    private GameObject life;
+    private GameObject rank;
+    #endregion
 
-    public AssetReferenceGameObject GetUIPrefab(UIPrefab prefabType)
+    
+    public UIPrefabCategory(GameObject _title, GameObject _board, GameObject _life, GameObject _rank, GameObject _gameOver)
     {
-        AssetReferenceGameObject prefab = null;
-        switch(prefabType)
+        title = _title;
+        board = _board;
+        life = _life;
+        rank = _rank;
+        gameOver = _gameOver;
+    }
+
+    public GameObject GetUIPrefab(UIPrefab prefabType)
+    {
+        GameObject prefab = null;
+
+        switch (prefabType)
         {
             case UIPrefab.Title:
                 prefab = title;
@@ -51,5 +59,3 @@ public enum UIPrefab
     Life,
     End,
 }
-
-// 이러면 초기에 생성을 해주려나?

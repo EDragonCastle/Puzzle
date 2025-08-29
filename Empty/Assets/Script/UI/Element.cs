@@ -41,6 +41,8 @@ public class Element : MonoBehaviour, IPointerDownHandler, IUIElement, IChannel
         Debug.Log($"{elementInfo.position.x} {elementInfo.position.y}");
         var eventManager = Locator<EventManager>.Get();
         eventManager.Notify(ChannelInfo.Select, this.gameObject);
+        var soundManager = Locator<SoundManager>.Get();
+        soundManager.PlaySFX(SFX.Pop3);
     }
 
     public void HandleEvent(ChannelInfo channel, object information = null)

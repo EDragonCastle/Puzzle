@@ -1,125 +1,177 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using UnityEngine.UI;
-using System.Threading.Tasks;
 
-public class ObjectPool
+public class ObjectPool<T, CATEGORY>
 {
-    private readonly ElementCategory category;
+    private readonly CATEGORY category;
     private readonly int initalizeLength;
+
     // Resource, Object
-    private Dictionary<AssetReferenceGameObject, Stack<GameObject>> pools;
+    private Dictionary<GameObject, Stack<GameObject>> pools;
 
     private GameObject saveObjectPools;
-    private MaterialManager materialManager;
-
-    private TaskCompletionSource<bool> initializeCompleteSource;
-    private Task initalizeTask => initializeCompleteSource.Task;
 
     #region AddressObject Object Pool Consgtrcut
-    public ObjectPool(ElementCategory _category, MaterialManager _materialManager, GameObject parent = null)
+    public ObjectPool(CATEGORY _category, GameObject parent = null)
     {
         category = _category;
         initalizeLength = 20;
-        pools = new Dictionary<AssetReferenceGameObject, Stack<GameObject>>();
+        pools = new Dictionary<GameObject, Stack<GameObject>>();
         saveObjectPools = parent;
-        materialManager = _materialManager;
         Initialize();
     }
 
-    public ObjectPool(ElementCategory _category, MaterialManager _materialManager, int length, GameObject parent = null)
+    public ObjectPool(CATEGORY _category, int length, GameObject parent = null)
     {
         category = _category;
         initalizeLength = length;
-        pools = new Dictionary<AssetReferenceGameObject, Stack<GameObject>>();
+        pools = new Dictionary<GameObject, Stack<GameObject>>();
         saveObjectPools = parent;
-        materialManager = _materialManager;
         Initialize();
     }
     #endregion
 
-    #region AddressObject
-    private async void Initialize()
+    private void Initialize()
     {
-        initializeCompleteSource = new TaskCompletionSource<bool>();
-
-        for (int j = 0; j < (int)ElementColor.End; j++)
+        if (typeof(CATEGORY) == typeof(ElementCategory))
         {
-            var originePrefab = category.GetCategory((ElementColor)j);
-            var prefabList = new Stack<GameObject>();
-            for (int i = 0; i < initalizeLength; i++)
+            var ElementCategory = category as ElementCategory;
+
+            for (int j = 0; j < (int)ElementColor.End; j++)
             {
-                // 위에 prefab을 받아와서 instantiate로 생성
-                GameObject copyGameObject = null;
-
-                if (saveObjectPools != null)
+                var originePrefab = ElementCategory.GetCategory((ElementColor)j);
+                var prefabList = new Stack<GameObject>();
+                for (int i = 0; i < initalizeLength; i++)
                 {
-                    var handle = Addressables.InstantiateAsync(originePrefab, saveObjectPools.transform);
-                    copyGameObject = await handle.Task;
+                    // 위에 prefab을 받아와서 instantiate로 생성
+                    GameObject copyGameObject = GameObject.Instantiate(originePrefab, saveObjectPools.transform);
 
-                    if(copyGameObject != null)
+                    if (copyGameObject != null)
                     {
+                        var materialManager = Locator<MaterialManager>.Get();
                         materialManager.CreateMaterial(copyGameObject, (ElementColor)j);
                         copyGameObject.SetActive(false);
                         prefabList.Push(copyGameObject);
                     }
+                    else
+                        Debug.LogError("Exist Not Object");
+                }
+                pools.Add(originePrefab, prefabList);
+            }
+        }
+    }
+
+    public GameObject Get(T _value)
+    {
+        if (typeof(CATEGORY) == typeof(ElementCategory) && typeof(T) == typeof(ElementColor))
+        {
+            var elementCategory = category as ElementCategory;
+
+            if(_value is ElementColor color)
+            {
+                var prefabs = elementCategory.GetCategory(color);
+                var stackObjects = pools[prefabs];
+
+                GameObject getObject = null;
+                if (stackObjects.Count > 0)
+                {
+                    getObject = stackObjects.Pop();
+                    getObject.SetActive(true);
+                }
+                else
+                {
+                    getObject = GameObject.Instantiate(prefabs, saveObjectPools.transform);
+                    var materialManager = Locator<MaterialManager>.Get();
+                    materialManager.CreateMaterial(getObject, color);
+                }
+                return getObject;
+            }
+        }
+        else if(typeof(CATEGORY) == typeof(SoundCategory) && typeof(T) == typeof(SFX))
+        {
+            var soundCategory = category as SoundCategory;
+
+            if(_value is SFX sfx)
+            {
+                var prefabs = soundCategory.GetSound(sfx);
+
+                GameObject getObject = null;
+                // 안에 key 값이 없으면 stack을 생성한다.
+                if(!pools.ContainsKey(prefabs))
+                {
+                    var stack = new Stack<GameObject>();
+                    pools.Add(prefabs, stack);
+
+                    getObject = GameObject.Instantiate(prefabs, saveObjectPools.transform);
+                    var component = getObject.GetComponent<PooledSoundObject>();
+                    if (component != null)
+                        component.SetSFX(sfx);
+                    return getObject;
+                }
+                else
+                {
+                    var stackObjects = pools[prefabs];
+                    if (stackObjects.Count > 0)
+                    {
+                        getObject = stackObjects.Pop();
+                        getObject.SetActive(true);
+                    }
+                    else
+                    {
+                        getObject = GameObject.Instantiate(prefabs, saveObjectPools.transform);
+                        var component = getObject.GetComponent<PooledSoundObject>();
+                        if (component != null)
+                            component.SetSFX(sfx);
+                    }
+
+                    return getObject;
                 }
             }
-            pools.Add(originePrefab, prefabList);
         }
 
-        initializeCompleteSource.TrySetResult(true);
-    }
-
-    public GameObject Get(ElementColor _color)
-    {
-        var prefabs = category.GetCategory(_color);
-        var stackObjects = pools[prefabs];
-
-        GameObject getObject = null;
-        if (stackObjects.Count > 0)
-        {
-            getObject = stackObjects.Peek();
-            getObject.SetActive(true);
-            stackObjects.Pop();
-            return getObject;
-        }
-        else
-        {
-            return NewObject(prefabs, _color);
-        }
-    }
-
-    private GameObject NewObject(AssetReferenceGameObject prefabs, ElementColor _color)
-    {
-        var getObject = Addressables.InstantiateAsync(prefabs, saveObjectPools.transform).WaitForCompletion();
-        materialManager.CreateMaterial(getObject, _color);
-        return getObject;
+        return null;
     }
 
     public void Return(GameObject destoryObject)
     {
-        var elementObject = destoryObject.GetComponent<IUIElement>();
-
-        if (elementObject != null)
+        if (typeof(CATEGORY) == typeof(ElementCategory))
         {
-            var elementInfo = elementObject.GetElementInfo();
-            elementInfo.isVisits = false;
-            elementInfo.position = default;
-            elementObject.SetElementInfo(elementInfo);
-            destoryObject.SetActive(false);
+            var elementCategory = category as ElementCategory;
+            var elementObject = destoryObject.GetComponent<IUIElement>();
 
-            var returnObject = category.GetCategory((ElementColor)elementInfo.color);
-            var stackObjects = pools[returnObject];
-            stackObjects.Push(destoryObject);
+            if (elementObject != null)
+            {
+                var elementInfo = elementObject.GetElementInfo();
+                elementInfo.isVisits = false;
+                elementInfo.position = default;
+                elementObject.SetElementInfo(elementInfo);
+                destoryObject.SetActive(false);
+
+                var returnObject = elementCategory.GetCategory((ElementColor)elementInfo.color);
+                var stackObjects = pools[returnObject];
+                stackObjects.Push(destoryObject);
+            }
+            else
+            {
+                Debug.Log($"{destoryObject} is not Exist IUIElement Component");
+            }
         }
-        else
+        else if(typeof(CATEGORY) == typeof(SoundCategory))
         {
-            Debug.Log($"{destoryObject} is not Exist IUIElement Component");
+            var soundCategory = category as SoundCategory;
+            var component = destoryObject.GetComponent<PooledSoundObject>();
+            if (component != null)
+            {
+                var sfx = component.GetSFX();
+                var sfxObject = soundCategory.GetSound(sfx);
+                var stackObject = pools[sfxObject];
+                stackObject.Push(destoryObject);
+            }
+            else
+            {
+                Debug.Log($"{destoryObject} is not Exist PooledSoundObject Component");
+            }
         }
     }
-    #endregion
-
-
 }

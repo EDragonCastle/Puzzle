@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using Unity.Jobs;
-using UnityEngine.AddressableAssets;
-
 
 public enum Direction
 {
@@ -108,21 +106,12 @@ public class Board : MonoBehaviour, IChannel
         lifes = new GameObject[maxLife];
         var lifePrefab = uiManager.GetUIPrefab(UIPrefab.Life);
         
-        // 여기서 Address Instanitate 해야한다.
-
         for(int i = 0; i < maxLife; i++)
         {
-            var lifeObject = CreateLifeObject(lifePrefab);
+            var lifeObject = GameObject.Instantiate(lifePrefab);
             lifes[i] = lifeObject;
         }
     }
-
-    private GameObject CreateLifeObject(AssetReferenceGameObject originPrefab)
-    {
-        var newObject = Addressables.InstantiateAsync(originPrefab).WaitForCompletion();
-        return newObject;
-    }
-
     private void Enable()
     {
         tourIndex.Clear();
@@ -291,6 +280,9 @@ public class Board : MonoBehaviour, IChannel
         // 이 곳에서 Job System을 사용하는 거야.
         var matchFailJob = new MatchFailJob();
         JobHandle jobHandle = matchFailJob.Schedule();
+
+        var soundManager = Locator<SoundManager>.Get();
+        soundManager.PlaySFX(SFX.NoneSwap);
 
         swapCount++;
         life.DestoryLife(swapCount);
@@ -543,7 +535,9 @@ public class Board : MonoBehaviour, IChannel
 
         isProcessing = true;
         eventManager.Notify(ChannelInfo.Score, removeIndex.Count);
-        
+
+        var soundManager = Locator<SoundManager>.Get();
+        soundManager.PlaySFX(SFX.Pop);
 
         // Destory
         foreach (var remove in removeIndex)

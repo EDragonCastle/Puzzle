@@ -11,12 +11,14 @@ public class ResourceManager
     // 그렇다면 Load한 Resource 관리는 어떻게 해야할까?
     private Dictionary<ResourceType, List<GameObject>> loadedResourceList;
 
+    #region ResourceManager 생성자
     public ResourceManager()
     {
         managementHandleList = new Dictionary<string, HandleObject>();
         loadedResourceList = new Dictionary<ResourceType, List<GameObject>>();
         Load();
     }
+    #endregion
     
     
     // Addressable 에서 Resource를 Load 해야 하는데 반납도 신경써야 한다.

@@ -2,17 +2,17 @@ using UnityEngine;
 
 public class Factory
 {
-    private ObjectPool objectPools;
+    private ObjectPool<ElementColor, ElementCategory> objectPools;
 
     #region Factory Construct
-    public Factory(ElementCategory _category, MaterialManager material, GameObject parent = null)
+    public Factory(ElementCategory _category, GameObject parent = null)
     {
-        objectPools = new ObjectPool(_category, material, parent);
+        objectPools = new ObjectPool<ElementColor, ElementCategory>(_category, parent);
     }
 
-    public Factory(ElementCategory _category, MaterialManager material, int poolInitSize, GameObject parent = null )
+    public Factory(ElementCategory _category, int poolInitSize, GameObject parent = null )
     {
-        objectPools = new ObjectPool(_category, material, poolInitSize, parent);
+        objectPools = new ObjectPool<ElementColor, ElementCategory>(_category, poolInitSize, parent);
     }
     #endregion
 
