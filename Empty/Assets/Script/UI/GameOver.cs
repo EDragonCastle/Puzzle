@@ -8,6 +8,9 @@ public class GameOver : MonoBehaviour
     private GameObject board;
     private GameObject ranking;
 
+    [SerializeField]
+    private GameObject adButton;
+
     private void Start()
     {
         var uiManager = Locator<UIManager>.Get();
@@ -18,6 +21,10 @@ public class GameOver : MonoBehaviour
     }
 
 
+    private void OnEnable()
+    {
+        adButton.SetActive(true);
+    }
     public void GameStart()
     {
         title.SetActive(false);
@@ -42,6 +49,21 @@ public class GameOver : MonoBehaviour
         ranking.SetActive(true);
     }
 
-    // 아 근데 setactive true, false 이거 마음에 안 드네
-    // 일단 보류하고 지금은 랭킹이나 신경쓰자.
+    public void ViewAD()
+    {
+        var adManager = Locator<AdManager>.Get();
+        var soundManager = Locator<SoundManager>.Get();
+
+        IReward scoreReward = new ScoreReward(1.5f);
+        soundManager.DestoryBGM();
+        adManager.LoadRewardedAd();
+
+        // True면 광고를 본 것이다. 그렇지 않으면 안 본 것이거나, 아직 Load가 안 된 것이다.
+        if (adManager.ShowRewardedAd(scoreReward))
+        {
+            adButton.SetActive(false);
+        }
+        else
+            adButton.SetActive(true);
+    }
 }

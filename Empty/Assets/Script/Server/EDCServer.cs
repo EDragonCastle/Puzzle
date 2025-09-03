@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 
 public class EDCServer
 {
-
-    
     private DatabaseReference dbReference;
     private FirebaseAuth auth;
     public readonly int ranking = 5;

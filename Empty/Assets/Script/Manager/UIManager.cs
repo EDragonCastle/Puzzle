@@ -13,9 +13,6 @@ public class UIManager
     private string score;
     private Level degree;
 
-    private TaskCompletionSource<bool> initializeCompleteSource;
-    private Task initalizeTask => initializeCompleteSource.Task;
-
     #region UIManager Structor
     public UIManager(UIPrefabCategory _category)
     {
@@ -47,6 +44,9 @@ public class UIManager
             return uiObject;
         }
     }
+
+    // 여기서 만들어둘까? Title, GameOver, Board랑
+
     public string GetScore() => score;
     public void SetScore(string _score) => score = _score;
 

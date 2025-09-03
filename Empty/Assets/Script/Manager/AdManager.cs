@@ -369,8 +369,23 @@ public class AdManager : MonoBehaviour
     #region Reward 
 
     private RewardedAd rewardedAd;
+    InitializationStatus initstatus;
 
-    private void LoadRewardedAd()
+    private void Initalize()
+    {
+        MobileAds.Initialize((InitializationStatus _initstatus) =>
+        {
+            if (_initstatus == null)
+            {
+                Debug.LogError("Google Mobile Ads initialization failed.");
+                return;
+            }
+
+            initstatus = _initstatus;
+        });
+    }
+
+    public void LoadRewardedAd()
     {
         if (rewardedAd != null)
         {
@@ -404,19 +419,30 @@ public class AdManager : MonoBehaviour
 
                 ad.SetServerSideVerificationOptions(options);
                 rewardedAd = ad;
+                RegisterRewardAd(rewardedAd);
             });
     }
 
-    private void ShowRewardedAd()
+    public bool ShowRewardedAd(IReward rewardInterface)
     {
         if (rewardedAd != null && rewardedAd.CanShowAd())
         {
             rewardedAd.Show((Reward reward) =>
             {
                 Debug.Log($"Rewarded ad reward the user. Type: {reward.Type}, Amout: {reward.Amount}");
+                // 여기에 보상을 넣으면 된다.
+                rewardInterface?.HandleReward();
             });
         }
+        else
+        {
+            Debug.LogError("Ad가 준비되지 않았다.");
+            return false;
+        }
+
+        return true;
     }
+
 
     private void RegisterRewardAd(RewardedAd rewardAd)
     {
@@ -443,6 +469,10 @@ public class AdManager : MonoBehaviour
         rewardAd.OnAdFullScreenContentClosed += () =>
         {
             Debug.Log("Rewarded ad full screen content closed.");
+
+            var soundManager = Locator<SoundManager>.Get();
+            soundManager.PlayBGM(BGM.Title);
+
             LoadRewardedAd();
         };
 
@@ -459,7 +489,7 @@ public class AdManager : MonoBehaviour
 
     private RewardedInterstitialAd rewardedInterstitialAd;
 
-    private void LoadRewardedInterstitialAd()
+    public void LoadRewardedInterstitialAd()
     {
         if (rewardedInterstitialAd != null)
         {
@@ -626,35 +656,20 @@ public class AdManager : MonoBehaviour
 
     private void Awake()
     {
-        MobileAds.Initialize((InitializationStatus initstatus) =>
-        {
-            if (initstatus == null)
-            {
-                Debug.LogError("Google Mobile Ads initialization failed.");
-                return;
-            }
-
-            Debug.Log("Google Mobile Ads initialization complete.");
-            //CreateBannerView();
-            //LoadInterstitialAd();
-            //LoadNativeOverlayAd();
-
-
-            LoadRewardedAd();
-            RegisterRewardAd(rewardedAd);
-            ShowRewardedAd();
-
-
-
-            LoadRewardedInterstitialAd();
-            RegisterRewardInterstitialAd(rewardedInterstitialAd);
-            ShowRewardInterstitialAd();
-
-        });
-
-        if (closeButtonObject != null)
-        {
-            closeButtonObject.SetActive(false);
-        }
+        Initalize();
     }
+}
+
+public enum ADType
+{
+    Banner,
+    Interstitial,
+    Reward,
+    RewardInterstitial,
+}
+
+public enum RewardType
+{
+    Gold,
+    Score,
 }

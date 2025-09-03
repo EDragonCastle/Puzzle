@@ -39,17 +39,18 @@ public class GameManager : MonoBehaviour
         UIManager uiManager = new UIManager(uiPrefabCategory);
         SoundManager soundManager = new SoundManager(soundCategory, objectPoolDummy);
         CameraManager cameraManager = new CameraManager(cameraCategory);
+        AdManager adManager = new AdManager();
 
         EDCServer server = new EDCServer();
         await server.InitalizeFirebase();
 
         // Provide Locator
-   
         Locator<Factory>.Provide(factory);
         Locator<CameraManager>.Provide(cameraManager);
         Locator<UIManager>.Provide(uiManager);
         Locator<EDCServer>.Provide(server);
         Locator<SoundManager>.Provide(soundManager);
+        Locator<AdManager>.Provide(adManager);
     }
 
     private void Start()

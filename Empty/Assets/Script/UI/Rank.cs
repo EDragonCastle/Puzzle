@@ -32,6 +32,9 @@ public class Rank : MonoBehaviour
     public void Exit()
     {
         rankBoard.SetActive(false);
+        var uiManager = Locator<UIManager>.Get();
+        var title = uiManager.GetUIPrefabObject(UIPrefab.Title);
+        title.SetActive(true);
     }
 
     private void WriteRankerScore()
