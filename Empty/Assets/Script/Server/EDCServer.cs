@@ -3,7 +3,7 @@ using Firebase.Auth;
 using Firebase.Database;
 using UnityEngine;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 public class EDCServer
 {
@@ -11,7 +11,7 @@ public class EDCServer
     private FirebaseAuth auth;
     public readonly int ranking = 5;
 
-    public async Task InitalizeFirebase()
+    public async UniTask InitalizeFirebase()
     {
         var dependancyStatus = await FirebaseApp.CheckAndFixDependenciesAsync();
 
@@ -26,7 +26,7 @@ public class EDCServer
         }
     }
 
-    public async Task WriteNewScore(string userId, int score)
+    public async UniTask WriteNewScore(string userId, int score)
     {
         // JSON으로 데이터 생성
         string json = JsonUtility.ToJson(new PlayerScore { userId = userId, score = score });
@@ -44,7 +44,7 @@ public class EDCServer
         }
     }
 
-    public async Task ReadRankingData()
+    public async UniTask ReadRankingData()
     {
         try
         {
@@ -82,7 +82,7 @@ public class EDCServer
         }
     }
 
-    public async Task<List<PlayerScore>> ReadRankingListData()
+    public async UniTask<List<PlayerScore>> ReadRankingListData()
     {
         try
         {
@@ -117,7 +117,7 @@ public class EDCServer
         }
     }
 
-    public async Task<bool> IsScoreRanker(int currentPlayerScore)
+    public async UniTask<bool> IsScoreRanker(int currentPlayerScore)
     {
 
         try

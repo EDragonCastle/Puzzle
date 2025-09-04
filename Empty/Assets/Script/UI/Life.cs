@@ -16,6 +16,9 @@ public class Life : MonoBehaviour
         {
             life.SetActive(true);
             life.transform.SetParent(parent.transform);
+            // 이것을 했을 때 터진다? 그냥 Task로 인해 터지는 것 같은데?
+            RectTransform rectTransform = life.GetComponent<RectTransform>();
+            rectTransform.localScale = new Vector3(1f, 1f, 1f);
         }
 
         for(int i = lifes.Length - 1; i > maxLife - 1; i--)
@@ -37,8 +40,3 @@ public class Life : MonoBehaviour
             return false;
     }
 }
-
-// 음 여기다 뭐 넣지?
-// setActive true false에 따라 위치가 조절되네?
-// 난이도에 따라 하자. Easy - 5, Normal - 3, Hard - 1로 하자.
-// 지금은 Easy에 맞게 만들자.

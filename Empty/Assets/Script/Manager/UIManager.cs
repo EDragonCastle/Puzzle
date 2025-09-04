@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.AddressableAssets;
-using System.Threading.Tasks;
 
 public class UIManager
 {
