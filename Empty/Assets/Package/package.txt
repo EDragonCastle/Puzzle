@@ -1,0 +1,17 @@
+Firebase
+
+1. Unity Download
+https://unity.com/kr/download
+
+2. Firebase UnitySDK Click 13.2.0
+https://firebase.google.com/download/unity?hl=ko
++ Firebase Console, Project Setting SDK Setting
+
+Unity Floder 
+StreamingAssets/SDK Auth 넣기
+
+3. Google admob 10.4.2
+https://github.com/googleads/googleads-mobile-unity/releases/tag/v10.4.2
+
+4. UniTask 2.5.10
+https://github.com/Cysharp/UniTask/releases

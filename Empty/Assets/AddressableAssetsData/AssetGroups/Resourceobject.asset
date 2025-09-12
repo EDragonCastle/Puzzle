@@ -1,0 +1,201 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Resourceobject
+  m_EditorClassIdentifier: 
+  m_GroupName: Resourceobject
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 56c746230c1345d4a8a5317ada443850
+  m_SerializeEntries:
+  - m_GUID: eedd49d8734447849ad58027e5036c2a
+    m_Address: SkeletonGraphic (celestial-circus-pro)
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Animation
+  - m_GUID: 97af9c5cc30bbbf4693d8b03a8badf9d
+    m_Address: SkeletonGraphic (cloud-pot)
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Animation
+  - m_GUID: 8183478b942ba564dac0f00f626cc644
+    m_Address: Blue Element
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  - m_GUID: d75b1ed27cdfa1d4a8cd3dd5b9cef020
+    m_Address: Green Element
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  - m_GUID: c6398b1809ec6a94fa4269b00925454a
+    m_Address: Yellow Element
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  - m_GUID: 2695ab253d2457f42bdacce17dcda57a
+    m_Address: Red Element
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - default
+  - m_GUID: 5a0002daa73a73e4db84f44626d4c126
+    m_Address: Stage1
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - BGM
+  - m_GUID: 69acdf8c7c0a7bb48b96fdf3780c4a56
+    m_Address: None Swap
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - SFX
+  - m_GUID: 75747e650b41b4d42bdad830be4e62b3
+    m_Address: Pop
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - SFX
+  - m_GUID: ad1ce3a765b02f741ac7746fff2fdd74
+    m_Address: Pop2
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - SFX
+  - m_GUID: 22fff326f3d6e1b449a52d2772a2dacb
+    m_Address: Pop3
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - SFX
+  - m_GUID: 6703675bd9f40d64ab560b9a1e4beb74
+    m_Address: Game Board
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+  - m_GUID: 3970b78616449e34f81c609d6eb0fede
+    m_Address: Game Over
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+  - m_GUID: 5619afcfbac7fcf43a9f195c2067713d
+    m_Address: Life
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+  - m_GUID: 620b57975a3451945b09b269a6259bb4
+    m_Address: Ranker
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+  - m_GUID: 32bfcb492ff31d84e94ac1a595e63d97
+    m_Address: Title
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - UI
+  - m_GUID: b66cf7a186d13054989b33a5c90044e4
+    m_Address: Assets/Spine/Runtime/spine-unity/Materials/UI-PMATexture/SkeletonGraphicDefault.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 9fc31635d6d5f8b41a3fd1e658fada08
+    m_Address: Assets/Sound/bubble-pop-06-351337.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 0246016d047f8704487eee90bd878cd6
+    m_Address: Assets/Sound/pop-39222.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: e4c4072460cb738478042574e54c6040
+    m_Address: Assets/Sound/pop-beat-62044.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 20c4e7735affb2f40a4020f93fc3ee92
+    m_Address: Assets/Sound/sharp-pop-328170.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 870f657376183b9489a1fe7ccbdacaa4
+    m_Address: Assets/Spine Examples/Spine Skeletons/celestial-circus/celestial-circus-pma_Material.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: a5c33832f91d8894880be68a36296d96
+    m_Address: Assets/Texture/Ocean BackGround Image.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 066f77f5bd5541e4398cf5f781339970
+    m_Address: Assets/Texture/free-icon-video-advertising-8430645.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 0787dc6c82760c84f92d800ceb454cd3
+    m_Address: Assets/Texture/free-icon-crown-1168868.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 1b960f8c7b8aa634cbe15ffded22a445
+    m_Address: Assets/Texture/Bubble Normal.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 1f58f938b731abc49954d61717132cd6
+    m_Address: Assets/Texture/BubbleSimple.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 51ea24e83c232c34994854424cd89413
+    m_Address: Assets/Spine Examples/Spine Skeletons/celestial-circus/celestial-circus-pma_celestial-circus-pma-Multiply.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 7eaea318921ef93428ded0a3c24125e4
+    m_Address: Assets/Spine Examples/Spine Skeletons/celestial-circus/celestial-circus-pma_Atlas.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: d5bf0901654cca44d8d54e4b72929593
+    m_Address: Assets/Spine Examples/Spine Skeletons/celestial-circus/celestial-circus-pma.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 76d3b704a29fb5a45afe9a0060e0a994
+    m_Address: Assets/Spine Examples/Spine Skeletons/celestial-circus/celestial-circus-pro_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: dfac7903fff13204b8eb6a7d944eb13a
+    m_Address: Assets/Spine Examples/Spine Skeletons/cloud-pot/cloud-pot-pma.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 18f84d2a7fafee74ea19c883a5b78915
+    m_Address: Assets/Spine Examples/Spine Skeletons/cloud-pot/cloud-pot-pma.atlas.txt
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 9f77b6317f3511f4485d8be1e088ff6c
+    m_Address: Assets/Spine Examples/Spine Skeletons/celestial-circus/celestial-circus-pma.atlas.txt
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 096e0c3bab14ba24580dfb1381b52a86
+    m_Address: Assets/Spine Examples/Spine Skeletons/celestial-circus/celestial-circus-pro.json
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 0ae329fcd695c314580d275e7990d195
+    m_Address: Assets/Spine Examples/Spine Skeletons/cloud-pot/cloud-pot-pma_Atlas.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 2bbfceb90d2246d44a79b471b9e137a1
+    m_Address: Assets/Spine Examples/Spine Skeletons/cloud-pot/cloud-pot-pma_Material.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 0992bb7553f1e6e46af828752ee4c0dc
+    m_Address: Assets/Spine Examples/Spine Skeletons/cloud-pot/cloud-pot.skel.bytes
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 9dd558761bfa4274584a8e92095c37ab
+    m_Address: Assets/Spine Examples/Spine Skeletons/cloud-pot/cloud-pot_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  - m_GUID: 8eafce45d13588b48a0dd7f6fa805d4f
+    m_Address: Assets/Sound/pop-cartoon-328167.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 9078c5a3f5e2b0a43917736846b2898e, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 83d3b53df1d98d4489419cc7f9fb0c34, type: 2}
+    - {fileID: 11400000, guid: 1b74295655007334d9ee4e1230678bc7, type: 2}

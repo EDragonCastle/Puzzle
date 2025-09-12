@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Material
+  m_EditorClassIdentifier: 
+  m_GroupName: Material
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 472ba38e4b283e04d80e03c4a0f75c03
+  m_SerializeEntries:
+  - m_GUID: 6cffee2141cc1964c8c5fbdb1ac9a071
+    m_Address: Bubble Element
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Material
+  - m_GUID: 340ae4abf0e158c4dbc66e09c582e6c1
+    m_Address: Assets/Material/Bubble Element.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 9078c5a3f5e2b0a43917736846b2898e, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 761d710f27258154f8d293b09c28df18, type: 2}
+    - {fileID: 11400000, guid: 0aef34ad76a424845ba90e7e962cfb3c, type: 2}
