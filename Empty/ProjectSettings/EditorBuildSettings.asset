@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/LoadingScene.unity
+    guid: 6b6e7674b68a98b47854ec762d429843
+  - enabled: 0
     path: Assets/Scenes/Bubble Pop.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   - enabled: 0

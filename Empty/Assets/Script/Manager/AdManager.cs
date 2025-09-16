@@ -2,6 +2,9 @@ using UnityEngine;
 using GoogleMobileAds.Api;
 using UnityEngine.UI;
 using System;
+using Cysharp.Threading.Tasks;
+
+
 public class AdManager : MonoBehaviour
 {
 
@@ -429,7 +432,7 @@ public class AdManager : MonoBehaviour
         {
             rewardedAd.Show((Reward reward) =>
             {
-                Debug.Log($"Rewarded ad reward the user. Type: {reward.Type}, Amout: {reward.Amount}");
+                UniTask.SwitchToMainThread();
                 // 여기에 보상을 넣으면 된다.
                 rewardInterface?.HandleReward();
             });

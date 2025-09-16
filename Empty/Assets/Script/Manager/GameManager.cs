@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
     private GameObject objectPoolDummy;
 
 
-    public async UniTask Initalize()
+    private void Awake()
     {
         // Manager constuctor
         EventManager eventManager = new EventManager();
@@ -19,8 +19,7 @@ public class GameManager : MonoBehaviour
         Locator<MaterialManager>.Provide(materialManager);
         Locator<EventManager>.Provide(eventManager);
 
-        ResourceManager resourceManager = new ResourceManager();
-        await resourceManager.Load();
+        var resourceManager = Locator<ResourceManager>.Get();
 
         #region Sound Category Setting
         var bgmList = new List<GameObject>();
@@ -33,6 +32,7 @@ public class GameManager : MonoBehaviour
         sfxList.Add(resourceManager.GetResource(ResourceType.SFX, "Pop2"));
         sfxList.Add(resourceManager.GetResource(ResourceType.SFX, "Pop3"));
         #endregion
+
         // Category Setting
         SoundCategory soundCategory = new SoundCategory(bgmList, sfxList);
         ElementCategory elementCategory = new ElementCategory(resourceManager.GetResource(ResourceType.Default, "Red Element"), resourceManager.GetResource(ResourceType.Default, "Blue Element"), resourceManager.GetResource(ResourceType.Default, "Green Element"), resourceManager.GetResource(ResourceType.Default, "Yellow Element"));
@@ -42,18 +42,14 @@ public class GameManager : MonoBehaviour
         UIManager uiManager = new UIManager(uiPrefabCategory);
         SoundManager soundManager = new SoundManager(soundCategory, objectPoolDummy);
         CameraManager cameraManager = new CameraManager(cameraCategory);
-        AdManager adManager = new AdManager();
 
-        EDCServer server = new EDCServer();
-        await server.InitalizeFirebase();
 
         // Provide Locator
         Locator<Factory>.Provide(factory);
         Locator<CameraManager>.Provide(cameraManager);
         Locator<UIManager>.Provide(uiManager);
-        Locator<EDCServer>.Provide(server);
+
         Locator<SoundManager>.Provide(soundManager);
-        Locator<AdManager>.Provide(adManager);
 
         Debug.Log("Complete GameManager");
     }
