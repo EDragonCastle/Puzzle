@@ -4,10 +4,15 @@ using UnityEngine.UI;
 using System;
 using Cysharp.Threading.Tasks;
 
-
+/// <summary>
+/// 각종 광고를 관리하고 있는 Manager
+/// </summary>
 public class AdManager : MonoBehaviour
 {
 
+    /// <summary>
+    /// Android일 때와 IPHONE일 때 각자 다르게 동작한다.
+    /// </summary>
 #if UNITY_ANDROID
     private string adUnitId = "ca-app-pub-3940256099942544/5354046379";
 #elif UNITY_IPHONE
@@ -16,6 +21,9 @@ public class AdManager : MonoBehaviour
     private string adUnitId = "unused";
 #endif
 
+    /// <summary>
+    /// Banner 광고와 관련된 함수
+    /// </summary>
     #region Banner
 
     private BannerView bannerView;
@@ -162,6 +170,9 @@ public class AdManager : MonoBehaviour
 
     #endregion
 
+    /// <summary>
+    /// 전면형 광고와 관련된 함수
+    /// </summary>
     #region Interstitial
 
     private InterstitialAd interstitialAd;
@@ -241,6 +252,9 @@ public class AdManager : MonoBehaviour
 
     #endregion
 
+    /// <summary>
+    /// Native 광고와 관련된 함수
+    /// </summary>
     #region Native / Native Overlay : Version 9.0.0 Requirements
     // https://developers.google.com/admob/unity/native?hl=ko
     // 여기 보면 Unity용 모바일 광고 Native Plugin은 지원이 중단되었다.
@@ -369,6 +383,9 @@ public class AdManager : MonoBehaviour
 
     #endregion
 
+    /// <summary>
+    /// 보상형 광고와 관련된 함수 (실제 사용할 함수)
+    /// </summary>
     #region Reward 
 
     private RewardedAd rewardedAd;
@@ -488,6 +505,9 @@ public class AdManager : MonoBehaviour
 
     #endregion
 
+    /// <summary>
+    /// 보상형 전면형 광고와 관련된 함수
+    /// </summary>
     #region Reward Interstitial
 
     private RewardedInterstitialAd rewardedInterstitialAd;
@@ -576,6 +596,9 @@ public class AdManager : MonoBehaviour
 
     #endregion
 
+    /// <summary>
+    /// App Opening에 관련된 함수
+    /// </summary>
     #region App Opening : Version 7.1.0 Requirements
 
     private AppOpenAd appOpenAd;
@@ -663,6 +686,9 @@ public class AdManager : MonoBehaviour
     }
 }
 
+/// <summary>
+/// 광고 Type
+/// </summary>
 public enum ADType
 {
     Banner,
@@ -671,6 +697,9 @@ public enum ADType
     RewardInterstitial,
 }
 
+/// <summary>
+/// 광고 보상
+/// </summary>
 public enum RewardType
 {
     Gold,

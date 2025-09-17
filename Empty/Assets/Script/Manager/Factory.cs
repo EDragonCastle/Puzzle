@@ -1,30 +1,54 @@
 using UnityEngine;
 
+/// <summary>
+/// Puzzle Element Object를 담고 있는 Factory다.
+/// </summary>
 public class Factory
 {
+    // ElementColor와 Elment Category를 담은 Object Pool
     private ObjectPool<ElementColor, ElementCategory> objectPools;
 
+    // Factory 생성자
     #region Factory Construct
+    /// <summary>
+    /// Factory를 생성한다.
+    /// </summary>
+    /// <param name="_category">Element Category가 필요하다.</param>
+    /// <param name="parent">Object들을 한 곳에 보관할 수 있는 부모 값</param>
     public Factory(ElementCategory _category, GameObject parent = null)
     {
         objectPools = new ObjectPool<ElementColor, ElementCategory>(_category, parent);
     }
 
+    /// <summary>
+    /// Factory를 생성한다.
+    /// </summary>
+    /// <param name="_category">Element Category가 필요하다.</param>
+    /// <param name="poolInitSize">Object를 Size를 정할 최소 값</param>
+    /// <param name="parent">Object들을 한 곳에 보관할 수 있는 부모 값</param>
     public Factory(ElementCategory _category, int poolInitSize, GameObject parent = null )
     {
         objectPools = new ObjectPool<ElementColor, ElementCategory>(_category, poolInitSize, parent);
     }
     #endregion
 
-    // 이건 일반 Object를 생성할 때나 좋은 방식이다. UI 생성은 좋은 방식이 아니여서 바꿔야 한다.
+    /// <summary>
+    /// IUIElement(Puzzle Element)를 Return하는 함수
+    /// </summary>
+    /// <param name="color">Enum Color</param>
+    /// <param name="position">위치</param>
+    /// <param name="rotation">회전</param>
+    /// <param name="scale">크기</param>
+    /// <param name="parent">부모 값</param>
+    /// <returns>IUIElement (Puzzle Element)</returns>
     public IUIElement CreateUIObject(ElementColor color, Vector2 position, Quaternion rotation, Vector3 scale, Transform parent = null)
     {
-        // 나중에 Object Pool로 교체할 것.
+        // object Pool에서 color값을 통해 object를 가져온다.
         GameObject elementInfo = objectPools.Get(color);
         elementInfo.transform.SetParent(parent);
         IUIElement uiInterface = elementInfo.GetComponent<IUIElement>();
 
-        // UI Rect Transform Setting 이렇게 하면 Elment 안에 RectTransform이랑 겹치려나? 없애서 괜찮아.
+        // rectTransform을 가져와서 위치, 회전, 크기를 조절한다.
         var elementRectTransform = uiInterface.GetRectTransform();
         elementRectTransform.anchoredPosition = position;
         elementRectTransform.rotation = rotation;
@@ -33,10 +57,14 @@ public class Factory
         return uiInterface;
     }
 
-    // 이 GameObject를 가지고 반납을 해야하는데 어떻게 쉽게할 수 있을까?
+    /// <summary>
+    /// Object 삭제이자 반납
+    /// Object Pool을 이용해서 다시 되돌린다.
+    /// </summary>
+    /// <param name="_gameObject"></param>
     public void DestoryUIObject(GameObject _gameObject)
     {
-        // object Pool을 이용해서 삭제해야 한다.
+        // object Pool을 이용해서 반납한다.
         objectPools.Return(_gameObject);
     }
 }

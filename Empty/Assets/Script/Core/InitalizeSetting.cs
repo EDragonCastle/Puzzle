@@ -2,6 +2,9 @@ using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System;
 
+/// <summary>
+/// 최초의 Scene에서 Resource Load와 Server Load, AD Load를 담당한다.
+/// </summary>
 public class InitalizeSetting : MonoBehaviour
 {
     public async UniTask Load(IProgress<float> progress = null)

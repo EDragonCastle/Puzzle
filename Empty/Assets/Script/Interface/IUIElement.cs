@@ -1,6 +1,8 @@
-// 아 근데 여기에 RectTransform 좋지 않은 이유가 using UnityEngine을 사용해서 별론데 어쩔 수 없나?
 using UnityEngine;
 
+/// <summary>
+/// Puzzle Object를 담당하고 있는 Interface
+/// </summary>
 public interface IUIElement
 {
     public ElementInfo GetElementInfo();

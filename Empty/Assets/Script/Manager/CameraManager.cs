@@ -1,5 +1,8 @@
 using UnityEngine;
 
+/// <summary>
+/// 카메라를 관리하고 있는 Maanger (실제 사용하지는 않고 있다.) 
+/// </summary>
 public class CameraManager 
 {
     private CameraCategory category;

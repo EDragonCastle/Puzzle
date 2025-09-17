@@ -1,6 +1,9 @@
 using UnityEngine;
 using TMPro;
 
+/// <summary>
+/// Score를 담당하고 있는 Class
+/// </summary>
 public class Score : MonoBehaviour, IChannel
 {
     [SerializeField]
@@ -15,18 +18,25 @@ public class Score : MonoBehaviour, IChannel
         textMeshPro.text = "0";
     }
 
+    // Event 등록
     private void OnEnable()
     {
         eventManager.Subscription(ChannelInfo.Score, HandleEvent);
         eventManager.Subscription(ChannelInfo.ResetScore, HandleEvent);
     }
 
+    // Event 해지
     private void OnDisable()
     {
         eventManager.Unsubscription(ChannelInfo.Score, HandleEvent);
         eventManager.Unsubscription(ChannelInfo.ResetScore, HandleEvent);
     }
 
+    /// <summary>
+    /// Event Manager에 사용할 IChannel Interface
+    /// </summary>
+    /// <param name="channel">채널 정보</param>
+    /// <param name="information">사용할 Object 내용</param>
     public void HandleEvent(ChannelInfo channel, object information = null)
     {
         switch(channel)
@@ -41,6 +51,10 @@ public class Score : MonoBehaviour, IChannel
         }
     }
 
+    /// <summary>
+    /// Score 점수가 바뀐다.
+    /// </summary>
+    /// <param name="value">바뀔 점수</param>
     private void ChangeScore(int value)
     {
         int currentScore = int.Parse(textMeshPro.text);

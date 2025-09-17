@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Sound Object Pool로 다시 되돌리는 함수
+/// </summary>
 [RequireComponent(typeof(AudioSource))]
 public class PooledSoundObject : MonoBehaviour
 {
@@ -10,6 +13,7 @@ public class PooledSoundObject : MonoBehaviour
 
     private void Awake()
     {
+        // audio Source의 시간만큼 흐른 후 자동으로 Object Pool로 다시 되돌린다.
         audioSource = this.GetComponent<AudioSource>();
         StartCoroutine(DisEnableObject(audioSource.clip.length));
     }
@@ -21,6 +25,7 @@ public class PooledSoundObject : MonoBehaviour
     // active true 일 때
     private void OnEnable()
     {
+        // 다시 true되면 Awake랑 동일하게 진행하도록 한다.
         StartCoroutine(DisEnableObject(audioSource.clip.length));
     }
 

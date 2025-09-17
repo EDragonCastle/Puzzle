@@ -1,6 +1,8 @@
 using UnityEngine;
-using UnityEngine.UI;
 
+/// <summary>
+/// Title을 담당하고 있는 Class
+/// </summary>
 public class Title : MonoBehaviour
 {
     private GameObject title;
@@ -26,11 +28,15 @@ public class Title : MonoBehaviour
         rank.SetActive(false);
     }
 
+    /// <summary>
+    /// 난이도 Button를 생각해서 만든 메서드 (현재는 사용하지 않는다.)
+    /// </summary>
     public void Easy()
     {
         uiManager.SetDegree(Level.Easy);
         GameStart();
     }
+
 
     public void Normal()
     {
@@ -43,9 +49,10 @@ public class Title : MonoBehaviour
         uiManager.SetDegree(Level.Hard);
         GameStart();
     }
-
-    // 난이도에 따른 변화도 생각해야 한다.
-    // 아주 간단한 방법이다. 미리 생성해두고 setActive true, false를 해주면 된다.
+    
+    /// <summary>
+    /// 게임 시작 Button을 누르면 실행할 메서드
+    /// </summary>
     public void GameStart()
     {
         title.SetActive(false);
@@ -54,6 +61,9 @@ public class Title : MonoBehaviour
         rank.SetActive(false);
     }
 
+    /// <summary>
+    /// Ranking Button을 누르면 실행할 메서드
+    /// </summary>
     public void Rank()
     {
         title.SetActive(true);
@@ -62,6 +72,9 @@ public class Title : MonoBehaviour
         rank.SetActive(true);
     }
 
+    /// <summary>
+    /// Game Exit Button을 누르면 실행할 메서드
+    /// </summary>
     public void GameExit()
     {
         // 게임 종료
@@ -73,6 +86,9 @@ public class Title : MonoBehaviour
     }
 }
 
+/// <summary>
+/// 난이도를 담고 있는 Enum Type
+/// </summary>
 public enum Level
 {
     Easy,

@@ -3,6 +3,9 @@ using TMPro;
 using System.Text.RegularExpressions;
 
 
+/// <summary>
+/// Ranker를 등록을 담당하는 Class
+/// </summary>
 public class RegisterRanker : MonoBehaviour
 {
     [SerializeField]
@@ -17,6 +20,9 @@ public class RegisterRanker : MonoBehaviour
     [SerializeField]
     private GameObject rankerObject;
     
+    /// <summary>
+    /// Ranker를 등록한다.
+    /// </summary>
     public async void RegisterRankerName()
     {
         // 빈칸 검사
@@ -31,6 +37,7 @@ public class RegisterRanker : MonoBehaviour
         // 영어만 나와야 한다.
         string english = @"^[a-zA-Z0-9]*$";
 
+        // 영어만 검사한다.
         if (!Regex.IsMatch(customUserName.text, english))
         {
             waringPanelObject.SetActive(true);
@@ -45,6 +52,7 @@ public class RegisterRanker : MonoBehaviour
         var uiManager = Locator<UIManager>.Get();
         var score = uiManager.GetScore();
 
+        // Ranker를 등록한다.
         Debug.Log($"{customUserName.text} {score} is Ranking Register");
         var EDCServer = Locator<EDCServer>.Get();
         await EDCServer.WriteNewScore(customUserName.text, int.Parse(score));
@@ -53,6 +61,7 @@ public class RegisterRanker : MonoBehaviour
         var gameOver = uiManager.GetUIPrefabObject(UIPrefab.Gameover);
         var rank = uiManager.GetUIPrefabObject(UIPrefab.Rank);
 
+        // Ranking UI로 이동한다.
         title.SetActive(false);
         gameOver.SetActive(false);
         rank.SetActive(true);

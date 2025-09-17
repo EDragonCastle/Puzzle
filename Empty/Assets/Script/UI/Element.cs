@@ -1,8 +1,9 @@
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using System;
 
+/// <summary>
+/// Puzzle Element를 담고 있는 Class
+/// </summary>
 [RequireComponent(typeof(RectTransform))]
 public class Element : MonoBehaviour, IPointerDownHandler, IUIElement, IChannel
 {
@@ -22,6 +23,7 @@ public class Element : MonoBehaviour, IPointerDownHandler, IUIElement, IChannel
         rectTransform = this.GetComponent<RectTransform>();
     }
 
+    // Event 등록
     private void OnEnable()
     {
         var eventManager = Locator<EventManager>.Get();
@@ -30,12 +32,17 @@ public class Element : MonoBehaviour, IPointerDownHandler, IUIElement, IChannel
         eventManager.Subscription(ChannelInfo.LightInfo, HandleEvent);
     }
 
+    // Event 해지
     private void OnDisable()
     {
         var eventManager = Locator<EventManager>.Get();
         eventManager.Unsubscription(ChannelInfo.LightInfo, HandleEvent);
     }
 
+    /// <summary>
+    /// Object를 Click 했을 때 나오는 메서드
+    /// </summary>
+    /// <param name="eventData">click 했을 때</param>
     public void OnPointerDown(PointerEventData eventData)
     {
         Debug.Log($"{elementInfo.position.x} {elementInfo.position.y}");
@@ -45,11 +52,17 @@ public class Element : MonoBehaviour, IPointerDownHandler, IUIElement, IChannel
         soundManager.PlaySFX(SFX.Pop3);
     }
 
+    /// <summary>
+    /// Event Manager에 사용할 IChannel Interface
+    /// </summary>
+    /// <param name="channel">채널 정보</param>
+    /// <param name="information">사용할 Object 내용</param>
     public void HandleEvent(ChannelInfo channel, object information = null)
     {
         switch(channel)
         {
             case ChannelInfo.LightInfo:
+                // object type을 LightInfo로 변경
                 if(information is LightInfo lightInfo)
                     ChangeLightMaterial(lightInfo);
                 break;
@@ -57,6 +70,10 @@ public class Element : MonoBehaviour, IPointerDownHandler, IUIElement, IChannel
         
     }
 
+    /// <summary>
+    /// Material의 정보를 변경하는 메서드
+    /// </summary>
+    /// <param name="lightInfo">Light 정보</param>
     private void ChangeLightMaterial(LightInfo lightInfo)
     {
         var materialManager = Locator<MaterialManager>.Get();
@@ -64,6 +81,9 @@ public class Element : MonoBehaviour, IPointerDownHandler, IUIElement, IChannel
     }
 }
 
+/// <summary>
+/// 위치와 색상과 방문 여부를 담고 있는 Struct
+/// </summary>
 [System.Serializable]
 public struct ElementInfo
 {

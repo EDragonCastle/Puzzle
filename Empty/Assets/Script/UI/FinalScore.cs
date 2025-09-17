@@ -1,7 +1,9 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 
+/// <summary>
+/// 마지막 Score 정보를 담고 있는 Class
+/// </summary>
 public class FinalScore : MonoBehaviour, IChannel
 {
     [SerializeField]
@@ -20,15 +22,19 @@ public class FinalScore : MonoBehaviour, IChannel
 
     private bool isRanker;
 
+    // Active True 됐을 때
     private async void OnEnable()
     {
+        // Manager를 가져오고 Event는 등록한다.
         var uiManager = Locator<UIManager>.Get();
         var eventManager = Locator<EventManager>.Get();
         eventManager.Subscription(ChannelInfo.Score, HandleEvent);
 
+        // Server에서 Score 정보를 가져온다.
         server = Locator<EDCServer>.Get();
         textMeshPro.text = uiManager.GetScore();
 
+        // Score 정보에 따른 Image가 출력이 되지 않게 잠시 Active False를 해둔다.
         newScore.SetActive(false);
         registerRanking.SetActive(false);
         adRowalImage.SetActive(false);
@@ -43,9 +49,10 @@ public class FinalScore : MonoBehaviour, IChannel
             return;
         }
 
+        // text 정보를 가지고 int 값으로 변경한다.
         if (int.TryParse(textMeshPro.text, out score))
         {
-            // 그냥 점수로 랭킹에 들어갈 수 있는지 확인
+            // 해당 점수로 랭킹에 들어갈 수 있는지 확인
             if (await server.IsScoreRanker(score))
             {
                 // 점수가 들어간다.
@@ -74,17 +81,27 @@ public class FinalScore : MonoBehaviour, IChannel
         }
     }
 
+    // Event 해지
     private void OnDisable()
     {
         var eventManager = Locator<EventManager>.Get();
         eventManager.Unsubscription(ChannelInfo.Score, HandleEvent);
     }
 
+    /// <summary>
+    /// Button에 사용할 메서드
+    /// </summary>
     public void RegisterRanker()
     {
         registerRanker.SetActive(true);
     }
 
+
+    /// <summary>
+    /// Event Manager에 사용할 IChannel Interface
+    /// </summary>
+    /// <param name="channel">채널 정보</param>
+    /// <param name="information">사용할 Object 내용</param>
     public void HandleEvent(ChannelInfo channel, object information = null)
     {
         switch(channel)

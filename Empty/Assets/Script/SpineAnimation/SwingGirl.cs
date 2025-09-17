@@ -1,6 +1,9 @@
 using UnityEngine;
 using Spine.Unity;
 
+/// <summary>
+/// Spine Animatioin 중 SwingGirl Animation Object
+/// </summary>
 public class SwingGirl : MonoBehaviour, IChannel
 {
     [SpineAnimation]
@@ -12,12 +15,16 @@ public class SwingGirl : MonoBehaviour, IChannel
 
     private void Awake()
     {
+        // skeleton을 코드에서 사용할 수 있도록 가져온다.
         skeletonAnimation = GetComponent<SkeletonGraphic>();
         skeleton = skeletonAnimation.Skeleton;
         animationState = skeletonAnimation.AnimationState;
+        
+        // 초기 Animation Setting
         SetAnimation(0, SwingGirlAnimation.Swing, true);
     }
 
+    // EventManager 등록
     private void OnEnable()
     {
         var eventManager = Locator<EventManager>.Get();
@@ -25,6 +32,7 @@ public class SwingGirl : MonoBehaviour, IChannel
         eventManager.Subscription(ChannelInfo.MatchFail, HandleEvent);
     }
 
+    // EventManager 해지
     private void OnDisable()
     {
         var eventManager = Locator<EventManager>.Get();
@@ -32,9 +40,16 @@ public class SwingGirl : MonoBehaviour, IChannel
         eventManager.Unsubscription(ChannelInfo.MatchFail, HandleEvent);
     }
 
+    // Porting
     private Spine.TrackEntry SetAnimation(int track, SwingGirlAnimation animationName, bool loop) => animationState.SetAnimation(track, SwingGirlAnimationToString(animationName), loop);
     private Spine.TrackEntry AddAnimation(int track, SwingGirlAnimation animationName, bool loop, float delay) => animationState.AddAnimation(track, SwingGirlAnimationToString(animationName), loop, delay);
 
+    /// <summary>
+    /// Animation이 다를 때만 Animation으로 바뀌는 함수
+    /// </summary>
+    /// <param name="track">현재 Track</param>
+    /// <param name="animationName">Animation 이름</param>
+    /// <param name="loop">Loop 여부</param>
     private void SetAnimationIfDifferent(int track, SwingGirlAnimation animationName, bool loop)
     {
         Spine.TrackEntry currentTrackEntry = animationState.GetCurrent(track);
@@ -43,19 +58,24 @@ public class SwingGirl : MonoBehaviour, IChannel
             SetAnimation(track, animationName, loop);
     }
 
+    /// <summary>
+    /// Event Manager에 사용할 IChannel Interface
+    /// </summary>
+    /// <param name="channel">채널 정보</param>
+    /// <param name="information">사용할 Object 내용</param>
     public void HandleEvent(ChannelInfo channel, object information = null)
     {
         switch (channel)
         {
             case ChannelInfo.MatchSuccess:
-                // Animation 실행
+                // Animation 성공시 실행
                 SetAnimationIfDifferent(0, SwingGirlAnimation.Swing, true);
                 SetAnimationIfDifferent(1, SwingGirlAnimation.EyeBlink_Long, true);
                 SetAnimationIfDifferent(2, SwingGirlAnimation.Stars, true);
                 SetAnimationIfDifferent(3, SwingGirlAnimation.Wing_And_Feet, true);
                 break;
             case ChannelInfo.MatchFail:
-                // Animation 실행
+                // Animation 실패시 실행
                 SetAnimationIfDifferent(0, SwingGirlAnimation.Wind_Idle, true);
                 SetAnimationIfDifferent(1, SwingGirlAnimation.EyeBlink, true);
                 SetAnimationIfDifferent(2, SwingGirlAnimation.Stars, false);
@@ -64,6 +84,11 @@ public class SwingGirl : MonoBehaviour, IChannel
         }
     }
 
+    /// <summary>
+    /// Enum To Animation 이름
+    /// </summary>
+    /// <param name="swingGirlAnimation">Animation Type</param>
+    /// <returns></returns>
     private string SwingGirlAnimationToString(SwingGirlAnimation swingGirlAnimation)
     {
         switch(swingGirlAnimation)
@@ -96,6 +121,9 @@ public class SwingGirl : MonoBehaviour, IChannel
 
 }
 
+/// <summary>
+/// SwingGirl Animation Enum Information
+/// </summary>
 public enum SwingGirlAnimation
 {
     EyeBlink,

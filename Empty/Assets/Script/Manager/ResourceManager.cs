@@ -4,15 +4,21 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Cysharp.Threading.Tasks;
 
+/// <summary>
+/// Addressable Asset에서 사용할 Resource들을 관리하고 있는 Manager
+/// </summary>
 public class ResourceManager
 {
-    // handle은 string로 관리하는 것이 맞는 것 같다.
+    // enum으로도 하려 했지만 string으로 관리하도록 했다.
     private Dictionary<string, HandleObject> managementHandleList;
 
-    // 그렇다면 Load한 Resource 관리는 어떻게 해야할까?
+    // Load가 된 Resource들을 관리할 Dictionary
     private Dictionary<ResourceType, List<GameObject>> loadedResourceList;
 
     #region ResourceManager 생성자
+    /// <summary>
+    /// Resource Manager 생성할 때 변수 초기화
+    /// </summary>
     public ResourceManager()
     {
         managementHandleList = new Dictionary<string, HandleObject>();
@@ -20,9 +26,8 @@ public class ResourceManager
     }
     #endregion
     
-    
-    // Addressable 에서 Resource를 Load 해야 하는데 반납도 신경써야 한다.
-    // 근데 GameObject로 통일해놔서 괜찮을 것 같다. Handle만 신경쓰면 될 것 같다.
+
+    // 맨 처음 Load할 Object
     public async UniTask Load()
     {
         await LoadResource(ResourceType.Animation, "SkeletonGraphic (celestial-circus-pro)");
@@ -47,14 +52,20 @@ public class ResourceManager
         await LoadResource(ResourceType.Default, "Red Element");
     }
 
+    /// <summary>
+    /// Load된 Object List에서 가져온다.
+    /// </summary>
+    /// <param name="type">원하는 Resource Type</param>
+    /// <param name="resourceName">Resource 이름</param>
+    /// <returns>GameObject</returns>
     public GameObject GetResource(ResourceType type, string resourceName)
     {
-        // 포함되어 있으면 하고 없으면 넘긴다.
+        // Resource Type에 있는지 확인한다.
         if (loadedResourceList.ContainsKey(type))
         {
+            // List를 가져와서 순회하는데 있으면 Object를 Return 한다.
             var loadTypeResourceList = loadedResourceList[type];
         
-            // Type 내에 있으면 Return
             foreach(var resourceObject in loadTypeResourceList)
             {
                 if (resourceObject.name == resourceName)
@@ -62,7 +73,7 @@ public class ResourceManager
             }
         }
 
-        // 없으면 다른 Type에 있는지 순회해야 한다.
+        // 없으면 혹시 다른 Type에 있는 것인지 확인한다.
         for(int i = 0; i < loadedResourceList.Count; i++)
         {
             if(!loadedResourceList.ContainsKey((ResourceType)i))
@@ -76,18 +87,28 @@ public class ResourceManager
             }
         }
 
+        // 그래도 없다면 Log를 띄운다.
         Debug.LogError($"Don't Exist {resourceName}");
 
         return null;
     }
 
+    /// <summary>
+    /// 실제 Addressable Asset에서 Load할 Object
+    /// </summary>
+    /// <param name="type">Resource Type</param>
+    /// <param name="resourceName">Resource 이름</param>
+    /// <returns></returns>
     public async UniTask LoadResource(ResourceType type, string resourceName)
     {
+        // Addressable Asset에서 Load를 한다.
         var handle = Addressables.LoadAssetAsync<GameObject>(resourceName);
         var loadedObject = await handle.Task;
 
+        // Addressable Asset에서 확인했는데 있으면 진행한다.
         if (handle.Status == AsyncOperationStatus.Succeeded)
         {
+            // 이름으로 관리되고 있는 Object인지 확인하는데 없으면 생성해서 새로 만들고, 있으면 이미 Load됐다고 알린다.
             if (!managementHandleList.ContainsKey(resourceName))
             {
                 HandleObject handleObject = new HandleObject();
@@ -98,6 +119,7 @@ public class ResourceManager
             else
                 return;
 
+            // LoadList에 Type이 있는지 확인해서 없다면 새로 만들어서 넣고, 있다면 넣는다.
             if (!loadedResourceList.ContainsKey(type))
             {
                 loadedResourceList.Add(type, new List<GameObject>());
@@ -108,13 +130,20 @@ public class ResourceManager
         }
     }
 
+    /// <summary>
+    /// 사용한 Resource를 반납한다.
+    /// </summary>
+    /// <param name="releaseObject">반납할 Resource Object</param>
     public void ReleaseResource(GameObject releaseObject)
     {
+        // 관리되고 있는 List에 있는지 확인한다.
         if (managementHandleList.ContainsKey(releaseObject.name))
         {
+            // List에서 제거한다.
             var handleObject = managementHandleList[releaseObject.name];
             var resourceList = loadedResourceList[handleObject.type];
 
+            // 순회하면서 같으면 제거한다.
             for(int i = 0; i < resourceList.Count; i++)
             {
                 var resourceObject = resourceList[i];
@@ -125,7 +154,7 @@ public class ResourceManager
                 }
             }
 
-            // 메모리에 등록되어 있던 것을 반납 후 Dictonary에 저장되어 있는거 삭제.
+            // 메모리에 등록되어 있던 것을 반납 후 Dictonary에 저장되어 있는거 삭제하고 Addressable Asset으로 다시 반납한다.
             Debug.Log("Release Handle");
             Addressables.Release(handleObject.handle);
             managementHandleList.Remove(releaseObject.name);
@@ -137,7 +166,7 @@ public class ResourceManager
         }
     }
 
-    // Async도 기다리는 거잖아. 오래 걸릴 거 같은데 일단 받고 생각해볼까?
+    // 과거 Load했던 방식
     private void LegacyLoad()
     {
         // Animation
@@ -167,11 +196,7 @@ public class ResourceManager
         Addressables.LoadAssetAsync<GameObject>("Red Element").Completed += (handle) => OnAssetLoad(handle, ResourceType.Default);
     }
 
-    /// <summary>
-    /// Asset을 Load하는 함수
-    /// </summary>
-    /// <param name="handle">LoadAsset Handle</param>
-    /// <param name="type">Resourcetype is LoadAsset Labels</param>
+    // 과거 Load 했던 방식에서 사용되었던 Load 방식
     private void OnAssetLoad(AsyncOperationHandle<GameObject> handle, ResourceType type)
     {
         if(handle.Status == AsyncOperationStatus.Succeeded)
@@ -202,6 +227,7 @@ public class ResourceManager
     }
 }
 
+// Addressable Asset에서 Group Type이다.
 public enum ResourceType
 {
     None,
@@ -213,6 +239,7 @@ public enum ResourceType
     Material,
 }
 
+// 관리할 Object struct
 public struct HandleObject
 {
     public AsyncOperationHandle<GameObject> handle;

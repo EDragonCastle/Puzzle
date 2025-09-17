@@ -1,8 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 
+/// <summary>
+/// UI 정보를 담고 있는 Category
+/// </summary>
 public class UIPrefabCategory
 { 
     #region UIObject
@@ -13,7 +13,14 @@ public class UIPrefabCategory
     private GameObject rank;
     #endregion
 
-    
+    /// <summary>
+    /// UIPrefabCategory 생성자
+    /// </summary>
+    /// <param name="_title">Title object</param>
+    /// <param name="_board">Board object</param>
+    /// <param name="_life">Life object</param>
+    /// <param name="_rank">Rank object</param>
+    /// <param name="_gameOver">Gameover object</param>
     public UIPrefabCategory(GameObject _title, GameObject _board, GameObject _life, GameObject _rank, GameObject _gameOver)
     {
         title = _title;
@@ -23,6 +30,11 @@ public class UIPrefabCategory
         gameOver = _gameOver;
     }
 
+    /// <summary>
+    /// UIPrefab 정보로 Object 출력
+    /// </summary>
+    /// <param name="prefabType">UIPrefab 정보</param>
+    /// <returns>UIPrefab Object</returns>
     public GameObject GetUIPrefab(UIPrefab prefabType)
     {
         GameObject prefab = null;
@@ -50,6 +62,9 @@ public class UIPrefabCategory
     }
 }
 
+/// <summary>
+/// UIPrefab 정보를 담당하고 있는 Enum
+/// </summary>
 public enum UIPrefab
 {
     Title,

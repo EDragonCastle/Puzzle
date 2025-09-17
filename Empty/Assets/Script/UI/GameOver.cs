@@ -1,6 +1,8 @@
 using UnityEngine;
-using UnityEngine.UI;
 
+/// <summary>
+/// GameOver를 담당하는 Class
+/// </summary>
 public class GameOver : MonoBehaviour
 {
     private GameObject title;
@@ -11,6 +13,7 @@ public class GameOver : MonoBehaviour
     [SerializeField]
     private GameObject adButton;
 
+    // 시작하면 Manager에서 관련 Object를 가져온다.
     private void Start()
     {
         var uiManager = Locator<UIManager>.Get();
@@ -20,11 +23,14 @@ public class GameOver : MonoBehaviour
         ranking = uiManager.GetUIPrefabObject(UIPrefab.Rank);
     }
 
-
     private void OnEnable()
     {
         adButton.SetActive(true);
     }
+
+    /// <summary>
+    /// Game Start Button에 사용할 메서드
+    /// </summary>
     public void GameStart()
     {
         title.SetActive(false);
@@ -33,6 +39,9 @@ public class GameOver : MonoBehaviour
         board.SetActive(true);
     }
 
+    /// <summary>
+    /// Title Button에 사용할 메서드
+    /// </summary>
     public void Title()
     {
         title.SetActive(true);
@@ -41,6 +50,9 @@ public class GameOver : MonoBehaviour
         ranking.SetActive(false);
     }
 
+    /// <summary>
+    /// Ranking Button에 사용할 메서드
+    /// </summary>
     public void Rank()
     {
         title.SetActive(false);
@@ -49,11 +61,16 @@ public class GameOver : MonoBehaviour
         ranking.SetActive(true);
     }
 
+    /// <summary>
+    /// 광고 Button에 사용할 메서드
+    /// </summary>
     public void ViewAD()
     {
+        // Manager를 가져온다.
         var adManager = Locator<AdManager>.Get();
         var soundManager = Locator<SoundManager>.Get();
 
+        // 어떤 보상을 넣을 지 만들고 광고를 보여준다.
         IReward scoreReward = new ScoreReward(1.5f);
         soundManager.DestoryBGM();
         adManager.LoadRewardedAd();

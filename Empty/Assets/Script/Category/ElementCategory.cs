@@ -1,7 +1,8 @@
 using UnityEngine;
-using UnityEngine.AddressableAssets;
-using UnityEngine.UI;
 
+/// <summary>
+/// 모든 Element 정보를 담고 있는 Class
+/// </summary>
 public class ElementCategory
 {
     #region Element Object
@@ -11,8 +12,13 @@ public class ElementCategory
     private GameObject yellowElement;
     #endregion
 
-    // Resource Manager에서 Load가 완료되었다.
-    // 이제 받아와서 사용하면 된다. 어떻게 받아야 할까? 지금은 4가지 색상 밖에 없으니 Object 4개를 넣어두는게 좋을 것 같다.
+    /// <summary>
+    /// ElementCategory 생성자
+    /// </summary>
+    /// <param name="red">red element object</param>
+    /// <param name="blue">blue element object</param>
+    /// <param name="green">green element object</param>
+    /// <param name="yellow">yellow element object</param>
     public ElementCategory(GameObject red, GameObject blue, GameObject green, GameObject yellow)
     {
         redElement = red;
@@ -21,6 +27,11 @@ public class ElementCategory
         yellowElement = yellow;
     }
 
+    /// <summary>
+    /// Category 정보에서 Object를 가져오는 함수
+    /// </summary>
+    /// <param name="_category">Color 정보</param>
+    /// <returns>element Object</returns>
     public GameObject GetCategory(ElementColor _category)
     {
         GameObject categoryObject = null;
@@ -53,6 +64,9 @@ public class ElementCategory
     }
 }
 
+/// <summary>
+/// Eelement Color 정보를 담고 있는 Enum
+/// </summary>
 public enum ElementColor
 {
     Red,
