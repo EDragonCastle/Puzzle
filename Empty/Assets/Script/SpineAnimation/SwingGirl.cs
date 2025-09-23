@@ -9,6 +9,9 @@ public class SwingGirl : MonoBehaviour, IChannel
     [SpineAnimation]
     public string swingGirlAnimator;
 
+    [SerializeField]
+    private bool isTesting = false;
+
     SkeletonGraphic skeletonAnimation;
     Spine.AnimationState animationState;
     Spine.Skeleton skeleton;
@@ -27,17 +30,23 @@ public class SwingGirl : MonoBehaviour, IChannel
     // EventManager 등록
     private void OnEnable()
     {
-        var eventManager = Locator<EventManager>.Get();
-        eventManager.Subscription(ChannelInfo.MatchSuccess, HandleEvent);
-        eventManager.Subscription(ChannelInfo.MatchFail, HandleEvent);
+        if(!isTesting)
+        {
+            var eventManager = Locator<EventManager>.Get();
+            eventManager.Subscription(ChannelInfo.MatchSuccess, HandleEvent);
+            eventManager.Subscription(ChannelInfo.MatchFail, HandleEvent);
+        }
     }
 
     // EventManager 해지
     private void OnDisable()
     {
-        var eventManager = Locator<EventManager>.Get();
-        eventManager.Unsubscription(ChannelInfo.MatchSuccess, HandleEvent);
-        eventManager.Unsubscription(ChannelInfo.MatchFail, HandleEvent);
+        if(!isTesting)
+        {
+            var eventManager = Locator<EventManager>.Get();
+            eventManager.Unsubscription(ChannelInfo.MatchSuccess, HandleEvent);
+            eventManager.Unsubscription(ChannelInfo.MatchFail, HandleEvent);
+        }
     }
 
     // Porting
