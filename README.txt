@@ -1,4 +1,4 @@
-Puzzle에 관한 내용을 정리한 Site는 다음과 같습니다.
+Puzzle에 관한 내용을 정리한 사이트는 다음과 같습니다.
 
 https://subdued-linen-da9.notion.site/Bubble-POP-24261bf532e080b19cfac664c22d083e?source=copy_link
 
